@@ -1,0 +1,57 @@
+\name{readCopyProbCPLEX}
+\alias{readCopyProbCPLEX}
+\alias{CPXreadcopyprob}
+
+\title{
+  Read an MPS, LP, or SAV File Into an Existing CPLEX Problem Object
+}
+
+\description{
+  Low level interface function to the IBM ILOG CPLEX function
+  \code{CPXreadcopyprob}.  Consult the IBM ILOG CPLEX documentation for more
+  detailed information.
+}
+
+\usage{
+  readCopyProbCPLEX(env, lp, fname, ftype = NULL)
+}
+
+\arguments{
+  \item{env}{
+    Pointer to an IBM ILOG CPLEX environment as returned by
+    \code{\link{openEnvCPLEX}}.
+  }
+  \item{lp}{
+    Pointer to an IBM ILOG CPLEX problem object as returned by
+    \code{\link{initProbCPLEX}}.
+  }
+  \item{fname}{
+    Single character value giving the filname to read from.
+  }
+  \item{ftype}{
+    Single character value giving the type of the file to read from.
+  }
+}
+
+\details{
+  Interface to the C function \code{readCopyProb} which calls the CPLEX
+  function \code{CPXreadcopyprob}.
+}
+
+\value{
+  Zero if successful, otherwise nonzero.
+}
+
+\references{
+  The IBM ILOG CPLEX home page at
+  \url{https://www.ibm.com/developerworks/university/academicinitiative/}.
+}
+
+\author{
+  Gabriel Gelius-Dietrich
+
+  Maintainer: Gabriel Gelius-Dietrich <geliudie@uni-duesseldorf.de>
+}
+
+\keyword{ optimize }
+

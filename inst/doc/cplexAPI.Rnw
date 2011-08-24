@@ -1,0 +1,207 @@
+\documentclass[a4paper,headings=small]{scrartcl}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{textcomp,lmodern}
+\typearea[current]{last}
+\usepackage{fixltx2e,mparhack,mathdots}
+
+\usepackage{natbib}
+\usepackage{hyperref}
+\bibliographystyle{abbrvnat}
+
+\usepackage{microtype}
+
+\newcommand{\Comp}[1]{\texttt{#1}}
+
+\addtolength{\skip\footins}{0.5\baselineskip}
+
+\usepackage{fnpos}
+
+
+\hypersetup{
+	pdftitle = {cplexAPI -- Quick Start},
+	pdfauthor = {Gabriel Gelius-Dietrich},
+	pdfsubject = {R Interface to C API of IBM ILOG CPLEX},
+	pdfkeywords = {Optimization, IBM ILOG CPLEX},
+    pdfborder = {0 0 0},
+    pdfhighlight = {/N}
+}
+
+
+\newcommand{\pkg}[1]{\emph{#1}}
+\newcommand{\pkgname}{\pkg{cplexAPI}}
+\newcommand{\prgname}[1]{\textsc{#1}}
+
+\newcommand{\cplex}{IBM\textregistered{} %
+                    ILOG\textregistered{} CPLEX\textregistered{}%
+}
+
+\begin{document}
+
+\title{cplexAPI -- Quick Start}
+%\VignetteIndexEntry{Package cplexAPI -- Quick Start}
+\author{Gabriel Gelius-Dietrich}
+
+\maketitle
+
+\section{Introduction}
+The package \pkgname{} provides a low level interface to the C~API of
+\prgname{\cplex}\footnote{\cplex{} version $\geq 12.1$ from the IBM Academic
+Ini\-tia\-tive
+
+\url{https://www.ibm.com/developerworks/university/academicinitiative/}}.
+The package \pkgname{} requires a working installation of \prgname{\cplex}.
+
+\section{Installation}
+See \Comp{INSTALL} for installation instructions and platform specific details.
+
+\section{Usage}
+
+\subsection{Creating and solving a linear optimization problem}
+
+In the following, an example lp-problem will be created and solved:
+\vspace{1em}
+
+\noindent
+\hspace{.5in} maximize
+$$z = 5 x_1 + 4 x_2 + 3 x_3$$
+\hspace{.5in} subject to
+$$
+\begin{array}{r@{\:}c@{\:}r@{\:}c@{\:}r@{\:}c@{\:}r}
+2 x_1 &+& 3 x_2 &+&   x_3 & \leq  5 \\
+4 x_1 &+&   x_2 &+& 2 x_3 & \leq 11 \\
+3 x_1 &+& 4 x_2 &+& 2 x_3 & \leq  8 \\
+\end{array}
+$$
+\hspace{.5in} where all variables are non-negative
+$$x_1 \geq 0, \ x_2 \geq 0, \ x_3 \geq 0$$
+
+\noindent
+Load the library.
+<<>>=
+library(cplexAPI)
+@
+Open a \prgname{\cplex{}} environment.
+<<>>=
+env <- openEnvCPLEX()
+@
+Create a problem object.
+<<>>=
+prob <- initProbCPLEX(env)
+@
+Assign a name to the problem object.
+<<>>=
+chgProbNameCPLEX(env, prob, "sample")
+@
+Prepare data structures for the problem object.
+Number of columns and rows.
+<<>>=
+nc <- 3
+nr <- 3
+@
+Objective function.
+<<>>=
+obj <- c(5, 4, 3)
+@
+Right hand side.
+<<>>=
+rhs <- c(5, 11, 8)
+@
+Sense of the right hand side.
+<<>>=
+sense <- rep("L", 3)
+@
+Variable lower bounds.
+<<>>=
+lb <- rep(0, 3)
+@
+Variable upper bounds.
+<<>>=
+ub <- rep(CPX_INFBOUND, 3)
+@
+Column and row names.
+<<>>=
+cn <- c("x1", "x2", "x3")
+rn <- c("q1", "q2", "q3")
+@
+The constraint matrix is passed in column major order format. \textbf{Be
+careful here:} all indices start with 0! Begin indices of rows.
+<<>>=
+beg <- c(0, 3, 6)
+@
+Number of non-zero elements per row.
+<<>>=
+cnt <- rep(3, 3)
+@
+Column indices.
+<<>>=
+ind <- c(0, 1, 2, 0, 1, 2, 0, 1, 2)
+@
+Non-zero elements.
+<<>>=
+val <- c(2, 4, 3, 3, 1, 4, 1, 2, 2)
+@
+Load problem data.
+<<>>=
+copyLpwNamesCPLEX(env, prob, nc, nr, CPX_MAX, obj, rhs, sense,
+                  beg, cnt, ind, val, lb, ub, NULL, cn, rn)
+@
+Solve the problem using the simplex algorithm.
+<<>>=
+lpoptCPLEX(env, prob)
+@
+Retrieve solution after optimization.
+<<>>=
+solutionCPLEX(env, prob)
+@
+Write the problem to file \texttt{prob.lp} in lp format.
+<<>>=
+writeProbCPLEX(env, prob, "prob.lp")
+@
+Read problem from file \texttt{prob.lp} in lp format.
+<<>>=
+lp <- initProbCPLEX(env)
+readCopyProbCPLEX(env, lp, "prob.lp")
+@
+Free memory, allacated to the problem object.
+<<>>=
+delProbCPLEX(env, prob)
+closeEnvCPLEX(env)
+@
+
+\subsection{Setting control prarmeters}
+Open a new environment.
+<<>>=
+pe <- openEnvCPLEX()
+@
+All parameters and possible values are described in the \prgname{\cplex}
+documentation.  All parameters can be set in \pkgname{}; the parameters names
+are the same as in \prgname{\cplex}. For example, if one wants to use the
+debugging routines, the `messages to screen switch' must be set to 1.
+<<>>=
+setIntParmCPLEX(pe, CPX_PARAM_SCRIND, CPX_ON)
+@
+Do not use advanced start information.
+<<>>=
+setIntParmCPLEX(pe, CPX_PARAM_ADVIND, 0)
+@
+Lower the feasibility tolerance.
+<<>>=
+setDblParmCPLEX(pe, CPX_PARAM_EPRHS, 1E-09)
+@
+Retrieve parameters which are not set at their default values.
+<<>>=
+(parm <- getChgParmCPLEX(pe))
+@
+Retrieve names of theese parameters.
+<<>>=
+sapply(parm, getParmNameCPLEX, env = pe)
+@
+Close the envoronment.
+<<>>=
+closeEnvCPLEX(pe)
+@
+
+
+\end{document}
