@@ -18,12 +18,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
 }
 
@@ -39,7 +41,7 @@
   \item{prstat }{presolve status values of the rows}
   \item{ocstat }{presolve status values of the columns of the presolved problem}
   \item{orstat }{presolve status values of the rows of the presolved problem}
-  otherwise an instance of class \code{\link{cpxerr}}.
+  otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

@@ -1,7 +1,7 @@
 /* cplexAPI.h
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 
-   Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+   Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -36,6 +36,29 @@ extern char errmsg[CPLEXAPIMSGBUFF];
 
 
 /* -------------------------------------------------------------------------- */
+/* help functions                                                             */
+/* -------------------------------------------------------------------------- */
+
+/* check for pointer to CPLEX problem object */
+SEXP isCPLEXprobPtr(SEXP ptr);
+
+/* check for pointer to CPLEX environment */
+SEXP isCPLEXenvPtr(SEXP ptr);
+
+/* check for pointer to CPLEX file */
+SEXP isCPLEXfilePtr(SEXP ptr);
+
+/* check for pointer to CPLEX channel */
+SEXP isCPLEXchanPtr(SEXP ptr);
+
+/* check for pointer to CPLEX termination signal */
+SEXP isCPLEXtermPtr(SEXP ptr);
+
+/* check for NULL pointer */
+SEXP isNULLptr(SEXP ptr);
+
+
+/* -------------------------------------------------------------------------- */
 /* API functions                                                              */
 /* -------------------------------------------------------------------------- */
 
@@ -52,16 +75,16 @@ SEXP initCPLEX(void);
 SEXP closeEnv(SEXP env);
 
 /* open cplex environment */
-SEXP openEnv();
+SEXP openEnv(SEXP ptrtype);
 
 /* remove problem object */
 SEXP delProb(SEXP env, SEXP lp);
 
 /* create new problem object */
-SEXP initProb(SEXP env, SEXP pname);
+SEXP initProb(SEXP env, SEXP pname, SEXP ptrtype);
 
 /* clone problem object */
-SEXP cloneProb(SEXP env, SEXP lp);
+SEXP cloneProb(SEXP env, SEXP lp, SEXP ptrtype);
 
 /* access the problem type that is currently stored in a problem object */
 SEXP getProbType(SEXP env, SEXP lp);
@@ -142,6 +165,10 @@ SEXP copyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
                   SEXP matbeg, SEXP matcnt, SEXP matind, SEXP matval,
                   SEXP lb, SEXP ub, SEXP rngval, SEXP cnames, SEXP rnames);
 
+/* copy a quadratic objective matrix Q when Q is not diagonal */
+SEXP copyQuad(SEXP env, SEXP lp,
+              SEXP qmatbeg, SEXP qmatcnt, SEXP qmatind, SEXP qmatval);
+
 /* write a problem as text file */
 SEXP writeProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype);
 
@@ -166,7 +193,7 @@ SEXP basicPresolve(SEXP env, SEXP lp);
 SEXP preslvWrite(SEXP env, SEXP lp, SEXP fname);
 
 /* return a pointer for the presolved problem */
-SEXP getRedLp(SEXP env, SEXP lp);
+SEXP getRedLp(SEXP env, SEXP lp, SEXP ptrtype);
 
 /* return the objective offset between the original problem and
    the presolved problem */
@@ -193,9 +220,6 @@ SEXP delRows(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
 /* delete a set of rows */
 SEXP delSetRows(SEXP env, SEXP lp, SEXP delstat);
-
-/* get a range of upper and lower ranges for right hand side values */
-SEXP rhsRange(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
 /* add new empty columns to a problem object */
 SEXP newCols(SEXP env, SEXP lp,
@@ -232,6 +256,10 @@ SEXP chgCoefList(SEXP env, SEXP lp, SEXP nnz, SEXP ia, SEXP ja, SEXP ar);
 
 /* change a single coefficient in the constraint matrix */
 SEXP chgCoef(SEXP env, SEXP lp, SEXP i, SEXP j, SEXP val);
+
+/* change a single coefficient in the quadratic objective of a quadratic
+   problem */
+SEXP chgQPcoef(SEXP env, SEXP lp, SEXP i, SEXP j, SEXP val);
 
 /* change a single coefficient in the constraint matrix */
 SEXP getCoef(SEXP env, SEXP lp, SEXP i, SEXP j);
@@ -308,7 +336,7 @@ SEXP getRowName(SEXP env, SEXP lp, SEXP begin, SEXP end);
 /* problem object */
 SEXP getColName(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
-/* searches for the index number of the specified column in a problem object */
+/* search for the index number of the specified column in a problem object */
 SEXP getColIndex(SEXP env, SEXP lp, SEXP cname);
 
 /* search for the index number of the specified row in a problem object */
@@ -382,6 +410,9 @@ SEXP siftopt(SEXP env, SEXP lp);
 /* solve lp problem using mipopt */
 SEXP mipopt(SEXP env, SEXP lp);
 
+/* solve qp problem using qpopt */
+SEXP qpopt(SEXP env, SEXP lp);
+
 /* access the MIP cutoff value being used during mixed integer optimization */
 SEXP getCutoff(SEXP env, SEXP lp);
 
@@ -423,9 +454,19 @@ SEXP getRowInfeas(SEXP env, SEXP lp, SEXP sol, SEXP begin, SEXP end);
    and the variable bounds in the current problem */
 SEXP refineConflict(SEXP env, SEXP lp);
 
+/* identify a minimal conflict for the infeasibility of the current problem
+   or a subset of constraints of the current problem */
+SEXP refineConflictExt(SEXP env, SEXP lp, SEXP grpcnt, SEXP concnt,
+                       SEXP grppref, SEXP grpbeg, SEXP grpind,
+                       SEXP grptype);
+
 /* return the linear constraints and variables belonging to a conflict
    previously computed by the routine CPXrefineconflict */
 SEXP getConflict(SEXP env, SEXP lp);
+
+/* get conflict status codes of the groups numbered beg (for begin) through end
+   in the most recent call */
+SEXP getConflictExt(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
 /* write an LP format file containing the identified conflict */
 SEXP cLpWrite(SEXP env, SEXP lp, SEXP fname);
@@ -499,7 +540,7 @@ SEXP objSa(SEXP env, SEXP lp, SEXP begin, SEXP end);
 SEXP rhsSa(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
 /* open a file */
-SEXP cplexfopen(SEXP fname, SEXP ftype);
+SEXP cplexfopen(SEXP fname, SEXP ftype, SEXP ptrtype);
 
 /* close a file */
 SEXP cplexfclose(SEXP cpfile);
@@ -511,16 +552,16 @@ SEXP fileput(SEXP cpfile, SEXP stuff);
 SEXP setLogFile(SEXP env, SEXP cpfile);
 
 /* access log file */
-SEXP getLogFile(SEXP env);
+SEXP getLogFile(SEXP env, SEXP ptrtype);
 
 /* obtain pointers to the four default channels */
-SEXP getChannels(SEXP env);
+SEXP getChannels(SEXP env, SEXP ptrtype);
 
 /* flush the output buffers of the four standard channels */
 SEXP flushStdChannels(SEXP env);
 
 /* instantiate a new channel object */
-SEXP addChannel(SEXP env);
+SEXP addChannel(SEXP env, SEXP ptrtype);
 
 /* flush all message destinations for a channel, ... */
 SEXP delChannel(SEXP env, SEXP newch);
@@ -548,7 +589,7 @@ SEXP tuneParam(SEXP env, SEXP lp,
                SEXP nStrP, SEXP strP, SEXP strPv);
 
 /* set termination signal */
-SEXP setTerminate(SEXP env);
+SEXP setTerminate(SEXP env, SEXP ptrtype);
 
 /* release termination signal */
 SEXP delTerminate(SEXP env, SEXP tsig);
@@ -559,3 +600,58 @@ SEXP chgTerminate(SEXP env, SEXP tval);
 /* print termination signal */
 SEXP printTerminate(SEXP env);
 
+/* add multiple MIP starts to a CPLEX problem object */
+SEXP addMIPstarts(SEXP env, SEXP lp, SEXP mcnt, SEXP nzcnt,
+                  SEXP beg, SEXP varindices, SEXP values,
+                  SEXP effortlevel, SEXP cmipstartname);
+
+/* modify or extend multiple MIP starts */
+SEXP chgMIPstarts(SEXP env, SEXP lp, SEXP mcnt, SEXP mipstartindices,
+                  SEXP nzcnt, SEXP beg, SEXP varindices,
+                  SEXP values, SEXP effortlevel);
+
+/* access a range of MIP starts of a CPLEX problem object */
+SEXP getMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* access the number of MIP starts in the CPLEX problem object */
+SEXP getNumMIPstarts(SEXP env, SEXP lp);
+
+/* delete a range MIP starts */
+SEXP delMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* write a range of MIP starts of a CPLEX problem object to a file
+   in MST format */
+SEXP writeMIPstarts(SEXP env, SEXP lp, SEXP fname, SEXP begin, SEXP end);
+
+/* read a file in the format MST and copy the information of all the MIP starts
+   contained in that file into a CPLEX problem object */
+SEXP readCopyMIPstarts(SEXP env, SEXP lp, SEXP fname);
+
+/* access a range of names of MIP starts */
+SEXP getMIPstartName(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* search for the index number of the specified MIP start */
+SEXP getMIPstartIndex(SEXP env, SEXP lp, SEXP iname);
+
+/* refine a conflict in order to determine why a given MIP start is not
+   feasible */
+SEXP refineMIPstartConflict(SEXP env, SEXP lp, SEXP mipstartindex);
+
+/* identify a minimal conflict for the infeasibility of the MIP start or a
+   subset of the constraints in the model */
+SEXP refineMIPstartConflictExt(SEXP env, SEXP lp, SEXP mipstartindex,
+                               SEXP grpcnt, SEXP concnt, SEXP grppref,
+                               SEXP grpbeg, SEXP grpind, SEXP grptype);
+
+/* return the number of nonzeros in the Q matrix */
+SEXP getNumQPnz(SEXP env, SEXP lp);
+
+/* return the number of variables that have quadratic objective coefficients */
+SEXP getNumQuad(SEXP env, SEXP lp);
+
+/* access the quadratic coefficient in the matrix Q */
+SEXP getQPcoef(SEXP env, SEXP lp, SEXP i, SEXP j);
+
+/* access a range of columns of the matrix Q of a model with a quadratic
+   objective function */
+SEXP getQuad(SEXP env, SEXP lp, SEXP begin, SEXP end);

@@ -48,10 +48,20 @@ There are basically two different ways of installing the cplexAPI package:
 For the installation on Windows systems the file Makewars.win in src/ is
 required. The file looks like this:
 
-CPLEX_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I${CPLEX_PATH}/CPLEX_Studio_AcademicResearch122/cplex/include
-CPLEX_LIBS=-L${CPLEX_PATH}/CPLEX_Studio_AcademicResearch122/cplex/lib/x86_windows_vs2008/stat_mta -lm -m32 -lcplex122
+PKG_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I"${CPLEX_STUDIO_DIR}\cplex\include"
+PKG_LIBS=-L"${CPLEX_STUDIO_LIB32}" -L"${CPLEX_STUDIO_LIB64}" -lm -lcplex124
 
 with the environment variable CPLEX_PATH being the installation directory
 of CPLEX. This procedure was tested successfully on 32-bit Windows XP.
 
 
+# ---------------------------------------------------------------------------- #
+
+See also: http://www.stats.ox.ac.uk/~ripley/Win64/W64porting.html
+
+If you want to have both 32- and 64 bit DLLs of libcplex in your PATH,
+a good way is to set PATH in
+R_HOME/etc/i386/Renviron.site for 32-bit and in
+R_HOME/etc/x64/Renviron.site for 64-bit.
+Also the variables CPLEX_STUDIO_DIR, CPLEX_STUDIO_LIB32 and
+CPLEX_STUDIO_LIB64 can be set here.

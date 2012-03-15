@@ -13,13 +13,17 @@
 }
 
 \usage{
-  getLogFileCPLEX(env)
+  getLogFileCPLEX(env, ptrtype = "cplex_file")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -29,7 +33,9 @@
 }
 
 \value{
-  Zero if successful, otherwise nonzero.
+  If successful, a pointer to the CPLEX file is returnd
+  (an instance of class \code{"\linkS4class{cplexPtr}"}), otherwise an
+  instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

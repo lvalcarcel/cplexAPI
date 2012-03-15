@@ -15,12 +15,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
   \item{ind}{
     Column indices of variables (remember: first index is \code{0}).
@@ -29,7 +31,8 @@
 
 \value{
   A numeric vector containing the upper bounds on the specified variables.
-  If not successfull an instance of class \code{\link{cpxerr}} is returned.
+  If not successfull an instance of class \code{"\linkS4class{cplexError}"} is
+  returned.
 }
 
 \references{
@@ -41,6 +44,10 @@
   Gabriel Gelius-Dietrich
 
   Maintainer: Gabriel Gelius-Dietrich <geliudie@uni-duesseldorf.de>
+}
+
+\seealso{
+  \code{\link{getUpperBndsCPLEX}}
 }
 
 \keyword{ optimize }

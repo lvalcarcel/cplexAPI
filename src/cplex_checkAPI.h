@@ -1,7 +1,7 @@
 /* cplex_checkAPI.h
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 
-   Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+   Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -52,6 +52,10 @@ SEXP checkCopyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
                        SEXP matbeg, SEXP matcnt, SEXP matind, SEXP matval,
                        SEXP lb, SEXP ub, SEXP rngval,
                        SEXP cnames, SEXP rnames);
+
+/* validate the arguments of the corresponding CPXcopyquad routine */
+SEXP checkCopyQuad(SEXP env, SEXP lp,
+                   SEXP qmatbeg, SEXP qmatcnt, SEXP qmatind, SEXP qmatval);
 
 /* validate the arguments of the corresponding CPXaddrows routine */
 SEXP checkAddRows(SEXP env, SEXP lp, SEXP ncols, SEXP nrows, SEXP nnz,

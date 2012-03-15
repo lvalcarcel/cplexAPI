@@ -1,7 +1,7 @@
 /* cplexAPI.c
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 
-   Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+   Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -31,6 +31,139 @@ volatile int terminate;
 
 
 /* -------------------------------------------------------------------------- */
+/* finalizer for cplex environments */
+static void cplexEnvFinalizer (SEXP env) {
+    if (!R_ExternalPtrAddr(env)) {
+        return;
+    }
+    else {
+        closeEnv(env);
+    }
+}
+
+/* finalizer for cplex problems
+
+There is only a finalizer for the CPLEX environment. If the environment is
+removed, all memory allocated by CPLEX will be returned to the OS.
+Alternative: make the environment a global variable, now you can have
+appropiate finalizers for all pointers. Disadvantage: parameter settings
+are only valid for a specific environment. So, one can only have one
+parameter setting per R session.
+
+static void cplexProbFinalizer (SEXP lp, SEXP env) {
+    
+    if ( (!R_ExternalPtrAddr(lp)) || (!R_ExternalPtrAddr(env)) ) {
+        return;
+    }
+    else {
+        delProb(env, lp);
+    }
+}
+*/
+
+
+/* -------------------------------------------------------------------------- */
+/* help functions                                                             */
+/* -------------------------------------------------------------------------- */
+
+/* check for pointer to CPLEX problem object */
+SEXP isCPLEXprobPtr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrTag(ptr) == tagCPLEXprob) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+/* check for pointer to CPLEX environment */
+SEXP isCPLEXenvPtr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrTag(ptr) == tagCPLEXenv) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+/* check for pointer to CPLEX file */
+SEXP isCPLEXfilePtr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrTag(ptr) == tagCPLEXfile) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+/* check for pointer to CPLEX channel */
+SEXP isCPLEXchanPtr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrTag(ptr) == tagCPLEXchannel) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+/* check for pointer to CPLEX termination signal */
+SEXP isCPLEXtermPtr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrTag(ptr) == tagCPLEXtermination) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+/* check for NULL pointer */
+SEXP isNULLptr(SEXP ptr) {
+
+    SEXP out = R_NilValue;
+
+    if ( (TYPEOF(ptr) == EXTPTRSXP) &&
+         (R_ExternalPtrAddr(ptr) == NULL) ) {
+        out = Rf_ScalarLogical(1);
+    }
+    else {
+        out = Rf_ScalarLogical(0);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* API functions                                                              */
 /* -------------------------------------------------------------------------- */
 
@@ -46,7 +179,7 @@ SEXP getErrorStr(SEXP env, SEXP err) {
         Cenv = NULL;
     }
     else {
-        checkTypeOfEnv(env);
+        checkEnv(env);
         Cenv = R_ExternalPtrAddr(env);
     }
 
@@ -72,7 +205,7 @@ SEXP getStatStr(SEXP env, SEXP stat) {
     CPXCHARptr statusString;
     char statmsg[510];
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     statusString = CPXgetstatstring(R_ExternalPtrAddr(env), Rf_asInteger(stat),
                                     statmsg
@@ -108,7 +241,7 @@ SEXP closeEnv(SEXP env) {
     SEXP out = R_NilValue;
     CPXENVptr del = NULL;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     del = R_ExternalPtrAddr(env);
 
@@ -128,22 +261,36 @@ SEXP closeEnv(SEXP env) {
 
 /* -------------------------------------------------------------------------- */
 /* open cplex environment */
-SEXP openEnv() {
+SEXP openEnv(SEXP ptrtype) {
 
     SEXP envext = R_NilValue;
+    SEXP ptr, class;
+
     CPXENVptr env = NULL;
 
     env = CPXopenCPLEX(&status);
+
     if (status != 0) {
         status_message(env, status);
-        envext = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create environment pointer */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_env_ptr"));
+
         envext = R_MakeExternalPtr(env, tagCPLEXenv, R_NilValue);
-        /* R_RegisterCFinalizer(envext, (R_CFinalizer_t) closeEnv); */
+        PROTECT(envext);
+        R_RegisterCFinalizerEx(envext, cplexEnvFinalizer, TRUE);
+        Rf_setAttrib(ptr, class, envext);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
     }
 
-    return envext;
+    return ptr;
 }
 
 
@@ -154,8 +301,8 @@ SEXP delProb(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     CPXLPptr del = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     del = R_ExternalPtrAddr(lp);
 
@@ -175,50 +322,77 @@ SEXP delProb(SEXP env, SEXP lp) {
 
 /* -------------------------------------------------------------------------- */
 /* create new problem object */
-SEXP initProb(SEXP env, SEXP pname) {
+SEXP initProb(SEXP env, SEXP pname, SEXP ptrtype) {
 
     SEXP lpext = R_NilValue;
+    SEXP ptr, class;
+
     CPXLPptr lp = NULL;
 
     const char *rpname = CHAR(STRING_ELT(pname, 0));
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     lp = CPXcreateprob(R_ExternalPtrAddr(env), &status, rpname);
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        lpext = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create problem pointer */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_prob_ptr"));
+
         lpext = R_MakeExternalPtr(lp, tagCPLEXprob, R_NilValue);
-        /* R_RegisterCFinalizer(lpext, (R_CFinalizer_t) delProb); */
+        PROTECT(lpext);
+        /* R_RegisterCFinalizerEx(lpext, cplexProbFinalizer, TRUE); */
+        Rf_setAttrib(ptr, class, lpext);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
     }
 
-    return lpext;
+    return ptr;
 }
 
 
 /* -------------------------------------------------------------------------- */
 /* clone problem object */
-SEXP cloneProb(SEXP env, SEXP lp) {
+SEXP cloneProb(SEXP env, SEXP lp, SEXP ptrtype) {
 
     SEXP lpext = R_NilValue;
+    SEXP ptr, class;
+
     CPXLPptr clp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     clp = CPXcloneprob(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), &status);
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        lpext = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create problem pointer */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_prob_ptr"));
+
         lpext = R_MakeExternalPtr(clp, tagCPLEXprob, R_NilValue);
-        /* R_RegisterCFinalizer(lpext, (R_CFinalizer_t) delProb); */
+        PROTECT(lpext);
+        Rf_setAttrib(ptr, class, lpext);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
     }
 
-    return lpext;
+    return ptr;
 }
 
 
@@ -229,8 +403,8 @@ SEXP getProbType(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int ptype = -1;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     ptype = CPXgetprobtype(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -246,8 +420,8 @@ SEXP chgProbType(SEXP env, SEXP lp, SEXP ptype) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgprobtype(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             Rf_asInteger(ptype));
@@ -268,7 +442,7 @@ SEXP getVersion(SEXP env) {
     SEXP out = R_NilValue;
     const char *ver;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     ver = CPXversion(R_ExternalPtrAddr(env));
 
@@ -284,7 +458,7 @@ SEXP setDefaultParm(SEXP env) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetdefaults(R_ExternalPtrAddr(env));
     if (status != 0) {
@@ -303,7 +477,7 @@ SEXP setIntParm(SEXP env, SEXP parm, SEXP value) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetintparam(R_ExternalPtrAddr(env), Rf_asInteger(parm),
                             Rf_asInteger(value)
@@ -325,7 +499,7 @@ SEXP getIntParm(SEXP env, SEXP parm) {
     SEXP out = R_NilValue;
     int value;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetintparam(R_ExternalPtrAddr(env), Rf_asInteger(parm), &value);
     if (status != 0) {
@@ -349,7 +523,7 @@ SEXP getInfoIntParm(SEXP env, SEXP parm) {
 
     int defval, minval, maxval;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXinfointparam(R_ExternalPtrAddr(env), Rf_asInteger(parm),
                              &defval, &minval, &maxval
@@ -383,7 +557,7 @@ SEXP setDblParm(SEXP env, SEXP parm, SEXP value) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetdblparam(R_ExternalPtrAddr(env), Rf_asInteger(parm),
                             Rf_asReal(value)
@@ -405,7 +579,7 @@ SEXP getDblParm(SEXP env, SEXP parm) {
     SEXP out = R_NilValue;
     double value;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetdblparam(R_ExternalPtrAddr(env), Rf_asInteger(parm), &value);
     if (status != 0) {
@@ -429,7 +603,7 @@ SEXP getInfoDblParm(SEXP env, SEXP parm) {
 
     double defval, minval, maxval;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXinfodblparam(R_ExternalPtrAddr(env), Rf_asInteger(parm),
                              &defval, &minval, &maxval
@@ -464,7 +638,7 @@ SEXP setStrParm(SEXP env, SEXP parm, SEXP value) {
     SEXP out = R_NilValue;
     const char *rvalue = CHAR(STRING_ELT(value, 0));
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetstrparam(R_ExternalPtrAddr(env), Rf_asInteger(parm), rvalue);
     if (status != 0) {
@@ -483,9 +657,9 @@ SEXP getStrParm(SEXP env, SEXP parm) {
 
     SEXP out = R_NilValue;
 
-    char strp[512];
+    char strp[CPX_STR_PARAM_MAX];
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetstrparam(R_ExternalPtrAddr(env), Rf_asInteger(parm), strp);
     if (status != 0) {
@@ -504,9 +678,9 @@ SEXP getInfoStrParm(SEXP env, SEXP parm) {
 
     SEXP out = R_NilValue;
 
-    char strp[512];
+    char strp[CPX_STR_PARAM_MAX];
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXinfostrparam(R_ExternalPtrAddr(env), Rf_asInteger(parm), strp);
     if (status != 0) {
@@ -525,9 +699,9 @@ SEXP getParmName(SEXP env, SEXP wparm) {
 
     SEXP out = R_NilValue;
 
-    char nparm[512];
+    char nparm[CPX_STR_PARAM_MAX];
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetparamname(R_ExternalPtrAddr(env), Rf_asInteger(wparm),
                              nparm
@@ -551,7 +725,7 @@ SEXP getParmNum(SEXP env, SEXP nparm) {
     const char *rnparm = CHAR(STRING_ELT(nparm, 0));
     int wparm;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetparamnum(R_ExternalPtrAddr(env), rnparm, &wparm);
     if (status != 0) {
@@ -572,7 +746,7 @@ SEXP readCopyParm(SEXP env, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXreadcopyparam(R_ExternalPtrAddr(env), rfname);
     if (status != 0) {
@@ -594,7 +768,7 @@ SEXP writeParm(SEXP env, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXwriteparam(R_ExternalPtrAddr(env), rfname);
     if (status != 0) {
@@ -615,7 +789,7 @@ SEXP getParmType(SEXP env, SEXP parm) {
 
     int parmT;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetparamtype(R_ExternalPtrAddr(env), Rf_asInteger(parm),
                              &parmT
@@ -643,7 +817,7 @@ SEXP getChgParm(SEXP env) {
     int sp, ret;
     int lg = 0;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     ret = CPXgetchgparam(R_ExternalPtrAddr(env), &lg, NULL, 0, &sp);
 
@@ -681,8 +855,8 @@ SEXP setObjDir(SEXP env, SEXP lp, SEXP lpdir) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     CPXchgobjsen(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                  Rf_asInteger(lpdir)
@@ -699,7 +873,7 @@ SEXP getObjDir(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int lpdir = 0;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     lpdir = CPXgetobjsen(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -730,8 +904,8 @@ SEXP copyLp(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
     const double *rub     = REAL(ub);
     const double *rrngval;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (rngval == R_NilValue) {
         rrngval = NULL;
@@ -747,6 +921,7 @@ SEXP copyLp(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
                        rmatbeg, rmatcnt, rmatind, rmatval,
                        rlb, rub, rrngval
                       );
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
     }
@@ -783,8 +958,8 @@ SEXP copyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
     const char **rcnames;
     const char ** rrnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (rngval == R_NilValue) {
         rrngval = NULL;
@@ -840,6 +1015,36 @@ SEXP copyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
 
 
 /* -------------------------------------------------------------------------- */
+/* copy a quadratic objective matrix Q when Q is not diagonal */
+SEXP copyQuad(SEXP env, SEXP lp,
+              SEXP qmatbeg, SEXP qmatcnt, SEXP qmatind, SEXP qmatval
+             ) {
+
+    SEXP out = R_NilValue;
+
+    const int *rqmatbeg    = INTEGER(qmatbeg);
+    const int *rqmatcnt    = INTEGER(qmatcnt);
+    const int *rqmatind    = INTEGER(qmatind);
+    const double *rqmatval = REAL(qmatval);
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXcopyquad(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                         rqmatbeg, rqmatcnt, rqmatind, rqmatval
+                        );
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* write a problem as text file */
 SEXP writeProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype) {
 
@@ -848,8 +1053,8 @@ SEXP writeProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype) {
     const char *rftype;
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (ftype == R_NilValue) {
         rftype = NULL;
@@ -880,8 +1085,8 @@ SEXP readCopyProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype) {
     const char *rftype;
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfProb(lp);
-    checkTypeOfEnv(env);
+    checkProb(lp);
+    checkEnv(env);
 
     if (ftype == R_NilValue) {
         rftype = NULL;
@@ -912,8 +1117,8 @@ SEXP dualWrite(SEXP env, SEXP lp, SEXP fname) {
     const char *rfname = CHAR(STRING_ELT(fname, 0));
     double osh;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdualwrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                           rfname, &osh);
@@ -935,8 +1140,8 @@ SEXP presolve(SEXP env, SEXP lp, SEXP method) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXpresolve(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             Rf_asInteger(method));
@@ -968,8 +1173,8 @@ SEXP getPreStat(SEXP env, SEXP lp) {
     int nrows = 0;
     int ncols = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nrows = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     ncols = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
@@ -1031,8 +1236,8 @@ SEXP basicPresolve(SEXP env, SEXP lp) {
     int nrows = 0;
     int ncols = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nrows = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     ncols = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
@@ -1081,8 +1286,8 @@ SEXP preslvWrite(SEXP env, SEXP lp, SEXP fname) {
     const char *rfname = CHAR(STRING_ELT(fname, 0));
     double off;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXpreslvwrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             rfname, &off
@@ -1101,27 +1306,43 @@ SEXP preslvWrite(SEXP env, SEXP lp, SEXP fname) {
 
 /* -------------------------------------------------------------------------- */
 /* return a pointer for the presolved problem */
-SEXP getRedLp(SEXP env, SEXP lp) {
+SEXP getRedLp(SEXP env, SEXP lp, SEXP ptrtype) {
 
     SEXP lpext = R_NilValue;
+    SEXP ptr, class;
+
     CPXCLPptr redlp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetredlp(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), &redlp);
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        lpext = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
         if (redlp != NULL) {
+            /* create problem pointer */
+            PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+            SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+            
+            PROTECT(class = Rf_allocVector(STRSXP, 1));
+            SET_STRING_ELT(class, 0, Rf_mkChar("cplex_prob_ptr"));
+
             lpext = R_MakeExternalPtr(&redlp, tagCPLEXprob, R_NilValue);
-            /* R_RegisterCFinalizer(lpext, (R_CFinalizer_t) delProb); */
+            PROTECT(lpext);
+            Rf_setAttrib(ptr, class, lpext);
+            Rf_classgets(ptr, class);
+            UNPROTECT(3);
+        }
+        else {
+            ptr = R_NilValue;
         }
     }
 
-    return lpext;
+    return ptr;
 }
 
 
@@ -1134,8 +1355,8 @@ SEXP getObjOffset(SEXP env, SEXP lp) {
 
     double ooff;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetobjoffset(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                              &ooff
@@ -1159,8 +1380,8 @@ SEXP unscaleProb(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXunscaleprob(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -1186,8 +1407,8 @@ SEXP newRows(SEXP env, SEXP lp,
     const char *rsense;
     const char **rrnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (rhs == R_NilValue) {
         rrhs = NULL;
@@ -1256,8 +1477,8 @@ SEXP addRows(SEXP env, SEXP lp, SEXP ncols, SEXP nrows, SEXP nnz,
     const char **rcnames;
     const char **rrnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (rhs == R_NilValue) {
         rrhs = NULL;
@@ -1325,8 +1546,8 @@ SEXP getNumRows(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int nrows = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nrows = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -1342,8 +1563,8 @@ SEXP delRows(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdelrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         Rf_asInteger(begin), Rf_asInteger(end)
@@ -1364,8 +1585,8 @@ SEXP delSetRows(SEXP env, SEXP lp, SEXP delstat) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdelsetrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                            INTEGER(delstat)
@@ -1394,8 +1615,8 @@ SEXP newCols(SEXP env, SEXP lp,
     const char *rxctype;
     const char **rcnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (obj == R_NilValue) {
         robj = NULL;
@@ -1471,8 +1692,8 @@ SEXP addCols(SEXP env, SEXP lp, SEXP ncols, SEXP nnz, SEXP objf,
     const double *rlb, *rub;
     const char **rcnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (lb == R_NilValue) {
         rlb = NULL;
@@ -1525,8 +1746,8 @@ SEXP getNumCols(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int ncols = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     ncols = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -1542,8 +1763,8 @@ SEXP delCols(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdelcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         Rf_asInteger(begin), Rf_asInteger(end)
@@ -1564,8 +1785,8 @@ SEXP delSetCols(SEXP env, SEXP lp, SEXP delstat) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdelsetcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                            INTEGER(delstat)
@@ -1589,8 +1810,8 @@ SEXP chgObj(SEXP env, SEXP lp, SEXP ncols, SEXP ind, SEXP val) {
     int *rind = INTEGER(ind);
     double *rval = REAL(val);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgobj(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                        Rf_asInteger(ncols), rind, rval
@@ -1614,8 +1835,8 @@ SEXP getObj(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgobj = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgobj = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -1650,8 +1871,8 @@ SEXP copyObjName(SEXP env, SEXP lp, SEXP oname) {
 
     const char *roname = CHAR(STRING_ELT(oname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcopyobjname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             roname
@@ -1676,8 +1897,8 @@ SEXP getObjName(SEXP env, SEXP lp) {
     int osp = 0;
     char *namesp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     ret = CPXgetobjname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         NULL, 0, &sp
@@ -1721,8 +1942,8 @@ SEXP chgCoefList(SEXP env, SEXP lp, SEXP nnz, SEXP ia, SEXP ja, SEXP ra) {
     const int *rja = INTEGER(ja);
     const double *rra = REAL(ra);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgcoeflist(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             Rf_asInteger(nnz), ria, rja, rra
@@ -1743,12 +1964,35 @@ SEXP chgCoef(SEXP env, SEXP lp, SEXP i, SEXP j, SEXP val) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgcoef(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         Rf_asInteger(i), Rf_asInteger(j), Rf_asReal(val)
                        );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* change a single coefficient in the quadratic objective of a quadratic
+   problem */
+SEXP chgQPcoef(SEXP env, SEXP lp, SEXP i, SEXP j, SEXP val) {
+
+    SEXP out = R_NilValue;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXchgqpcoef(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                          Rf_asInteger(i), Rf_asInteger(j), Rf_asReal(val)
+                         );
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
     }
@@ -1767,8 +2011,8 @@ SEXP getCoef(SEXP env, SEXP lp, SEXP i, SEXP j) {
 
     double coef = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetcoef(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         Rf_asInteger(i), Rf_asInteger(j), &coef
@@ -1792,8 +2036,8 @@ SEXP getNumNnz(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int nnz = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nnz = CPXgetnumnz(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -1813,8 +2057,8 @@ SEXP chgBnds(SEXP env, SEXP lp, SEXP ncols, SEXP ind, SEXP lu, SEXP bd) {
     const char *rlu   = CHAR(STRING_ELT(lu, 0));
     const double *rbd = REAL(bd);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgbds(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                        Rf_asInteger(ncols), rind, rlu, rbd
@@ -1845,8 +2089,8 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     double *pbnds = 0;
     char *ptype = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     /* PrintValue(j); */
 
@@ -1854,7 +2098,7 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     nVar = nj;                          /* number of changes */
     eq   = R_Calloc(nj, int);           /* boolean: fixed variable yes|no */
 
-    /* printf("%i\n", nj); */
+    /* Rprintf("%i\n", nj); */
 
     for (k = 0; k < nj; k++) {
         if (islessgreater(rlb[k], rub[k])) {
@@ -1867,8 +2111,8 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     }
 
     nChg = nVar;                        /* number of changes */
-    /* printf("nj: %i\n", nj); */
-    /* printf("nVar: %i\n", nVar); */
+    /* Rprintf("nj: %i\n", nj); */
+    /* Rprintf("nVar: %i\n", nVar); */
 
     pj    = R_Calloc(nVar, int);        /* prepare arrays for the */
     pbnds = R_Calloc(nVar, double);     /* call to CPXchgbds() */
@@ -1876,9 +2120,9 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     ptype[nVar] = '\0';
 
     /* int dingsbums = strlen(ptype); */
-    /* printf("L: %i\n", dingsbums); */
+    /* Rprintf("L: %i\n", dingsbums); */
 
-    /* printf("protect\n"); */
+    /* Rprintf("protect\n"); */
 
     for (k = 0; k < nj; k++) {
         if (eq[k] == 0) {               /* if a variable has upper and */
@@ -1891,7 +2135,7 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
             ptype[nVar] = 'U';
         }
         else {
-            /* printf("eq %i\n", k); */
+            /* Rprintf("eq %i\n", k); */
             pj[k]    = rj[k];
             pbnds[k] = rlb[k];
             ptype[k] = 'B';
@@ -1899,14 +2143,14 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     }
 
     /*
-    printf("nVar: %i\n", nVar);
+    Rprintf("nVar: %i\n", nVar);
     for (k=0;k<nChg;k++) {
-        printf("pj: %i   ", pj[k]);
-        printf("ptype: %c   ", ptype[k]);
-        printf("pbnds: %f\n", pbnds[k]);
+        Rprintf("pj: %i   ", pj[k]);
+        Rprintf("ptype: %c   ", ptype[k]);
+        Rprintf("pbnds: %f\n", pbnds[k]);
     }
-    printf("\n");
-    printf("done\n");
+    Rprintf("\n");
+    Rprintf("done\n");
     */
 
     status = CPXchgbds(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
@@ -1920,7 +2164,7 @@ SEXP chgColsBnds(SEXP env, SEXP lp, SEXP j, SEXP lb, SEXP ub) {
     R_Free(pbnds);
     R_Free(ptype);
 
-    /* printf("cplex\n\n\n"); */
+    /* Rprintf("cplex\n\n\n"); */
 
     out = Rf_ScalarInteger(status);
 
@@ -1938,8 +2182,8 @@ SEXP tightenBnds(SEXP env, SEXP lp, SEXP ncols, SEXP ind, SEXP lu, SEXP bd) {
     const char *rlu = CHAR(STRING_ELT(lu, 0));
     double *rbd = REAL(bd);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXtightenbds(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                            Rf_asInteger(ncols), rind, rlu, rbd
@@ -1963,8 +2207,8 @@ SEXP chgColType(SEXP env, SEXP lp, SEXP ncols, SEXP ind, SEXP xctype) {
     int *rind = INTEGER(ind);
     const char *rxctype = CHAR(STRING_ELT(xctype, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgctype(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          Rf_asInteger(ncols), rind, rxctype
@@ -1988,8 +2232,8 @@ SEXP getColType(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int lgxctype;
     char *xctype = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgxctype = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2027,8 +2271,8 @@ SEXP copyColType(SEXP env, SEXP lp, SEXP xctype) {
 
     const char *rxctype = CHAR(STRING_ELT(xctype, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcopyctype(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          rxctype
@@ -2052,8 +2296,8 @@ SEXP getLowerBnds(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lglb = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lglb = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2088,8 +2332,8 @@ SEXP getUpperBnds(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgub = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgub = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2129,8 +2373,8 @@ SEXP getLowBndsIds(SEXP env, SEXP lp, SEXP ind, SEXP ncols) {
 
     int check = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     PROTECT(olb = Rf_allocVector(REALSXP, nc));
 
@@ -2174,8 +2418,8 @@ SEXP getUppBndsIds(SEXP env, SEXP lp, SEXP ind, SEXP ncols) {
 
     int check = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     PROTECT(oub = Rf_allocVector(REALSXP, nc));
 
@@ -2213,8 +2457,8 @@ SEXP chgRhs(SEXP env, SEXP lp, SEXP nrows, SEXP ind, SEXP val) {
     int *rind = INTEGER(ind);
     double *rval = REAL(val);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgrhs(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                        Rf_asInteger(nrows), rind, rval
@@ -2235,8 +2479,8 @@ SEXP getRhs(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgrhs;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgrhs = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2272,8 +2516,8 @@ SEXP chgSense(SEXP env, SEXP lp, SEXP nrows, SEXP ind, SEXP sense) {
     int *rind = INTEGER(ind);
     const char *rsense = CHAR(STRING_ELT(sense, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgsense(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          Rf_asInteger(nrows), rind, rsense
@@ -2297,8 +2541,8 @@ SEXP getSense(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int lgsense;
     char *sense = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgsense = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2333,8 +2577,8 @@ SEXP delNames(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdelnames(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -2355,8 +2599,8 @@ SEXP chgProbName(SEXP env, SEXP lp, SEXP probname) {
 
     const char *rprobname = CHAR(STRING_ELT(probname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgprobname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             rprobname
@@ -2381,8 +2625,8 @@ SEXP getProbName(SEXP env, SEXP lp) {
     int bsp = 0;
     char *namesp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     ret = CPXgetprobname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          NULL, 0, &sp
@@ -2426,8 +2670,8 @@ SEXP chgName(SEXP env, SEXP lp, SEXP key, SEXP ij, SEXP name) {
     const char *rkey = CHAR(STRING_ELT(key, 0));
     const char *rname = CHAR(STRING_ELT(name, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          rkey[0], Rf_asInteger(ij), rname
@@ -2453,8 +2697,8 @@ SEXP chgRowName(SEXP env, SEXP lp, SEXP nnames, SEXP ind, SEXP names) {
     const char **rnames;
     /* char **rnames = (char **) CHAR(names); */
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     numn = Rf_length(names);
     rnames = R_Calloc(numn, const char *);
@@ -2487,8 +2731,8 @@ SEXP chgColName(SEXP env, SEXP lp, SEXP nnames, SEXP ind, SEXP names) {
     const int *rind = INTEGER(ind);
     const char **rnames;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     numn = Rf_length(names);
     rnames = R_Calloc(numn, const char *);
@@ -2524,8 +2768,8 @@ SEXP getRowName(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     char **name = NULL;
     char *namesp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgname = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2585,8 +2829,8 @@ SEXP getColName(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     char **name = NULL;
     char *namesp = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgname = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2629,12 +2873,11 @@ SEXP getColName(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     }
 
     return out;
-
 }
 
 
 /* -------------------------------------------------------------------------- */
-/* searches for the index number of the specified column in a problem object */
+/* search for the index number of the specified column in a problem object */
 SEXP getColIndex(SEXP env, SEXP lp, SEXP cname) {
 
     SEXP out = R_NilValue;
@@ -2643,8 +2886,8 @@ SEXP getColIndex(SEXP env, SEXP lp, SEXP cname) {
 
     int cindex = -1;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetcolindex(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             rcname, &cindex
@@ -2658,7 +2901,6 @@ SEXP getColIndex(SEXP env, SEXP lp, SEXP cname) {
     }
 
     return out;
-
 }
 
 
@@ -2672,8 +2914,8 @@ SEXP getRowIndex(SEXP env, SEXP lp, SEXP rname) {
 
     int rindex = -1;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetrowindex(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             rrname, &rindex
@@ -2687,7 +2929,6 @@ SEXP getRowIndex(SEXP env, SEXP lp, SEXP rname) {
     }
 
     return out;
-
 }
 
 
@@ -2700,8 +2941,8 @@ SEXP chgRngVal(SEXP env, SEXP lp, SEXP nrows, SEXP ind, SEXP val) {
     int *rind = INTEGER(ind);
     double *rval = REAL(val);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXchgrngval(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                           Rf_asInteger(nrows), rind, rval
@@ -2725,8 +2966,8 @@ SEXP getRngVal(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgrngval = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgrngval = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2770,8 +3011,8 @@ SEXP getRows(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int nnz    = 0;
     int lgrows = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgrows = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2844,8 +3085,8 @@ SEXP getCols(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int nnz    = 0;
     int lgcols = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgcols = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -2909,8 +3150,8 @@ SEXP completelp(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcompletelp(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -2930,8 +3171,8 @@ SEXP cleanupCoef(SEXP env, SEXP lp, SEXP eps) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcleanup(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                         Rf_asReal(eps)
@@ -2963,8 +3204,8 @@ SEXP copyStart(SEXP env, SEXP lp,
     double *rcdual;
     double *rrdual;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (cstat == R_NilValue) {
         rcstat = NULL;
@@ -3030,8 +3271,8 @@ SEXP copyBase(SEXP env, SEXP lp, SEXP cstat, SEXP rstat) {
     int *rcstat = INTEGER(cstat);
     int *rrstat = INTEGER(rstat);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcopybase(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          rcstat, rrstat
@@ -3059,8 +3300,8 @@ SEXP copyPartBase(SEXP env, SEXP lp,
     int *rcstat = INTEGER(cstat);
     int *rrstat = INTEGER(rstat);
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXcopypartialbase(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                                 Rf_asInteger(ncind), rcind, rcstat,
@@ -3087,8 +3328,8 @@ SEXP getBase(SEXP env, SEXP lp) {
 
     int nc, nr;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nc = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     nr = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
@@ -3129,8 +3370,8 @@ SEXP baseWrite(SEXP env, SEXP lp, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXmbasewrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                            rfname
@@ -3153,8 +3394,8 @@ SEXP readCopyBase(SEXP env, SEXP lp, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXreadcopybase(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                              rfname
@@ -3175,8 +3416,8 @@ SEXP lpopt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXlpopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3195,8 +3436,8 @@ SEXP primopt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXprimopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3215,8 +3456,8 @@ SEXP dualopt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXdualopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3235,8 +3476,8 @@ SEXP baropt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXbaropt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3255,8 +3496,8 @@ SEXP hybbaropt(SEXP env, SEXP lp, SEXP method) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXhybbaropt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                           Rf_asInteger(method)
@@ -3277,8 +3518,8 @@ SEXP hybnetopt(SEXP env, SEXP lp, SEXP method) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXhybnetopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                           Rf_asInteger(method)
@@ -3299,8 +3540,8 @@ SEXP siftopt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXsiftopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3319,10 +3560,30 @@ SEXP mipopt(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXmipopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* solve qp problem using qpopt */
+SEXP qpopt(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXqpopt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
     }
@@ -3341,8 +3602,8 @@ SEXP getCutoff(SEXP env, SEXP lp) {
 
     double coff;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetcutoff(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), &coff);
     if (status != 0) {
@@ -3369,8 +3630,8 @@ SEXP getGrad(SEXP env, SEXP lp, SEXP j) {
 
     int nr = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nr = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3413,8 +3674,8 @@ SEXP getItCnt(SEXP env, SEXP lp) {
 
     int itcnt = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     itcnt = CPXgetitcnt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3433,8 +3694,8 @@ SEXP getPhase1Cnt(SEXP env, SEXP lp) {
 
     int pcnt = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     pcnt = CPXgetphase1cnt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3452,8 +3713,8 @@ SEXP getSiftItCnt(SEXP env, SEXP lp) {
 
     int scnt = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     scnt = CPXgetsiftitcnt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3471,8 +3732,8 @@ SEXP getSiftPase1Cnt(SEXP env, SEXP lp) {
 
     int spcnt = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     spcnt = CPXgetsiftphase1cnt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3490,8 +3751,8 @@ SEXP getDbsCnt(SEXP env, SEXP lp) {
 
     int dcnt = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     dcnt = CPXgetdsbcnt(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3515,8 +3776,8 @@ SEXP feasOpt(SEXP env, SEXP lp, SEXP rhs, SEXP rng, SEXP lb, SEXP ub) {
     double *rlb;
     double *rub;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (rhs == R_NilValue) {
         rrhs = NULL;
@@ -3570,8 +3831,8 @@ SEXP feasOpt(SEXP env, SEXP lp, SEXP rhs, SEXP rng, SEXP lb, SEXP ub) {
     const double *rlb;
     const double *rub;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nr = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     nc = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
@@ -3644,8 +3905,8 @@ SEXP getColInfeas(SEXP env, SEXP lp, SEXP sol, SEXP begin, SEXP end) {
     double *rsol;
     int lginf = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (sol == R_NilValue) {
         rsol = NULL;
@@ -3691,8 +3952,8 @@ SEXP getRowInfeas(SEXP env, SEXP lp, SEXP sol, SEXP begin, SEXP end) {
     double *rsol;
     int lginf = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (sol == R_NilValue) {
         rsol = NULL;
@@ -3737,8 +3998,8 @@ SEXP refineConflict(SEXP env, SEXP lp) {
 
     int ncr = 0, ncc = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXrefineconflict(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                                &ncr, &ncc
@@ -3766,6 +4027,39 @@ SEXP refineConflict(SEXP env, SEXP lp) {
 
 
 /* -------------------------------------------------------------------------- */
+/* identify a minimal conflict for the infeasibility of the current problem
+   or a subset of constraints of the current problem */
+SEXP refineConflictExt(SEXP env, SEXP lp, SEXP grpcnt, SEXP concnt,
+                       SEXP grppref, SEXP grpbeg, SEXP grpind,
+                       SEXP grptype
+                      ) {
+
+    SEXP out = R_NilValue;
+
+    const double *rgrppref = REAL(grppref);
+    const int *rgrpbeg     = INTEGER(grpbeg);
+    const int *rgrpind     = INTEGER(grpind);
+    const char *rgrptype   = CHAR(STRING_ELT(grptype, 0));
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXrefineconflictext(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                  Rf_asInteger(grpcnt), Rf_asInteger(concnt),
+                                  rgrppref, rgrpbeg, rgrpind, rgrptype
+                                 );
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* return the linear constraints and variables belonging to a conflict
    previously computed by the routine CPXrefineconflict */
 SEXP getConflict(SEXP env, SEXP lp) {
@@ -3784,8 +4078,8 @@ SEXP getConflict(SEXP env, SEXP lp) {
     int nr = 0;
     int nc = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     /* Calculate the required length of rind, rstat, cind and cstat by calling
        CPXgetconflict a first time with NULL -> nr and nc contain the
@@ -3800,7 +4094,7 @@ SEXP getConflict(SEXP env, SEXP lp) {
     nc = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     */
 
-    /* printf("rows: %i, columns: %i\n", nr, nc); */
+    /* Rprintf("rows: %i, columns: %i\n", nr, nc); */
 
     if (ret != 0) {
         status_message(R_ExternalPtrAddr(env), status);
@@ -3853,6 +4147,43 @@ SEXP getConflict(SEXP env, SEXP lp) {
 
 
 /* -------------------------------------------------------------------------- */
+/* get conflict status codes of the groups numbered beg (for begin) through end
+   in the most recent call */
+SEXP getConflictExt(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out     = R_NilValue;
+    SEXP grpstat = R_NilValue;
+
+    int lggs = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    lggs = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
+
+    if (lggs > 0) {
+
+        PROTECT(grpstat = Rf_allocVector(INTSXP, lggs));
+
+        status = CPXgetconflictext(R_ExternalPtrAddr(env),
+                                   R_ExternalPtrAddr(lp), INTEGER(grpstat),
+                                   Rf_asInteger(begin), Rf_asInteger(end)
+                                  );
+        if (status != 0) {
+            status_message(R_ExternalPtrAddr(env), status);
+            out = cpx_error(status);
+        }
+        else {
+            out = grpstat;
+        }
+
+        UNPROTECT(1);
+    }
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* write an LP format file containing the identified conflict */
 SEXP cLpWrite(SEXP env, SEXP lp, SEXP fname) {
 
@@ -3860,8 +4191,8 @@ SEXP cLpWrite(SEXP env, SEXP lp, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXclpwrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), rfname);
     if (status != 0) {
@@ -3880,8 +4211,8 @@ SEXP freePresolve(SEXP env, SEXP lp) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXfreepresolve(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     if (status != 0) {
@@ -3902,8 +4233,8 @@ SEXP getMethod(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int method;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     method = CPXgetmethod(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3921,8 +4252,8 @@ SEXP getSubMethod(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int submethod;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     submethod = CPXgetsubmethod(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -3941,8 +4272,8 @@ SEXP getDblQual(SEXP env, SEXP lp, SEXP w) {
 
     double quality;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetdblquality(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                               &quality, Rf_asInteger(w)
@@ -3968,8 +4299,8 @@ SEXP getIntQual(SEXP env, SEXP lp, SEXP w) {
 
     int quality;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetintquality(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                               &quality, Rf_asInteger(w)
@@ -3995,8 +4326,8 @@ SEXP solnInfo(SEXP env, SEXP lp) {
 
     int met, type, pfeas, dfeas;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXsolninfo(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                          &met, &type, &pfeas, &dfeas
@@ -4051,8 +4382,8 @@ SEXP solution(SEXP env, SEXP lp) {
     int rcheck = 0;  /* 1 if nrows is zero */
     int ccheck = 0;  /* 1 if ncols is zero */
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     nrows = CPXgetnumrows(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
     ncols = CPXgetnumcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
@@ -4148,8 +4479,8 @@ SEXP solWrite(SEXP env, SEXP lp, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXsolwrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), rfname);
     if (status != 0) {
@@ -4171,8 +4502,8 @@ SEXP readCopySol(SEXP env, SEXP lp, SEXP fname) {
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXreadcopysol(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
                             rfname
@@ -4194,8 +4525,8 @@ SEXP getStat(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int solstat = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     solstat = CPXgetstat(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -4213,8 +4544,8 @@ SEXP getSubStat(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     int substat = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     substat = CPXgetsubstat(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
 
@@ -4231,8 +4562,8 @@ SEXP getObjVal(SEXP env, SEXP lp) {
     SEXP out = R_NilValue;
     double obj;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     status = CPXgetobjval(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), &obj);
     if (status != 0) {
@@ -4256,8 +4587,8 @@ SEXP getProbVar(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgx = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgx = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4293,8 +4624,8 @@ SEXP getSlack(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgslack = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgslack = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4330,8 +4661,8 @@ SEXP getPi(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgpi = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgpi = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4368,8 +4699,8 @@ SEXP getDj(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgdj = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgdj = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4410,8 +4741,8 @@ SEXP boundSa(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgb = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgb = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4468,8 +4799,8 @@ SEXP objSa(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgo = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgo = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4520,8 +4851,8 @@ SEXP rhsSa(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
     int lgr = 0;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     lgr = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
 
@@ -4562,9 +4893,11 @@ SEXP rhsSa(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
 /* -------------------------------------------------------------------------- */
 /* open a file */
-SEXP cplexfopen(SEXP fname, SEXP ftype) {
+SEXP cplexfopen(SEXP fname, SEXP ftype, SEXP ptrtype) {
 
     SEXP fileext = R_NilValue;
+    SEXP ptr, class;
+
     CPXFILEptr cpfile = NULL;
 
     const char *rfname = CHAR(STRING_ELT(fname, 0));
@@ -4573,10 +4906,25 @@ SEXP cplexfopen(SEXP fname, SEXP ftype) {
     cpfile = CPXfopen(rfname, rftype);
 
     if (cpfile != NULL) {
+        /* create pointer to file */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_file_ptr"));
+
         fileext = R_MakeExternalPtr(cpfile, tagCPLEXfile, R_NilValue);
+        PROTECT(fileext);
+        Rf_setAttrib(ptr, Rf_install("CPLEXfn"), fname);
+        Rf_setAttrib(ptr, class, fileext);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
+    }
+    else {
+        ptr = R_NilValue;
     }
 
-    return fileext;
+    return ptr;
 }
 
 
@@ -4587,7 +4935,7 @@ SEXP cplexfclose(SEXP cpfile) {
     SEXP out = R_NilValue;
     CPXFILEptr del = NULL;
 
-    checkTypeOfFile(cpfile);
+    checkFile(cpfile);
 
     del = R_ExternalPtrAddr(cpfile);
 
@@ -4610,7 +4958,7 @@ SEXP fileput(SEXP cpfile, SEXP stuff) {
 
     const char *rstuff = CHAR(STRING_ELT(stuff, 0));
 
-    checkTypeOfFile(cpfile);
+    checkFile(cpfile);
 
     status = CPXfputs(rstuff, R_ExternalPtrAddr(cpfile));
 
@@ -4632,11 +4980,11 @@ SEXP setLogFile(SEXP env, SEXP cpfile) {
         rcpfile = NULL;
     }
     else {
-        checkTypeOfFile(cpfile);
+        checkFile(cpfile);
         rcpfile = R_ExternalPtrAddr(cpfile);
     }
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetlogfile(R_ExternalPtrAddr(env), rcpfile);
     if (status != 0) {
@@ -4651,75 +4999,94 @@ SEXP setLogFile(SEXP env, SEXP cpfile) {
 
 /* -------------------------------------------------------------------------- */
 /* access log file */
-SEXP getLogFile(SEXP env) {
+SEXP getLogFile(SEXP env, SEXP ptrtype) {
 
     SEXP logfout = R_NilValue;
+    SEXP ptr, class;
+
     CPXFILEptr logfile = NULL;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetlogfile(R_ExternalPtrAddr(env), &logfile);
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        logfout = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create pointer to file */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_file_ptr"));
+
         logfout = R_MakeExternalPtr(logfile, tagCPLEXfile, R_NilValue);
+        PROTECT(logfout);
+        Rf_setAttrib(ptr, class, logfout);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
     }
 
-    return logfout;
+    return ptr;
 }
 
 
 /* -------------------------------------------------------------------------- */
 /* obtain pointers to the four default channels */
-SEXP getChannels(SEXP env) {
-
-    SEXP out     = R_NilValue;
-    SEXP listn   = R_NilValue;
+SEXP getChannels(SEXP env, SEXP ptrtype) {
 
     SEXP resout  = R_NilValue;
     SEXP warnout = R_NilValue;
     SEXP errout  = R_NilValue;
     SEXP logout  = R_NilValue;
 
+    SEXP ptr, class;
+
     CPXCHANNELptr results = NULL;
     CPXCHANNELptr warning = NULL;
     CPXCHANNELptr error   = NULL;
     CPXCHANNELptr log     = NULL;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgetchannels(R_ExternalPtrAddr(env),
                             &results, &warning, &error, &log
                            );
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        out = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create channel pointers */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_chan_ptr"));
+
         resout  = R_MakeExternalPtr(results, tagCPLEXchannel, R_NilValue);
+        PROTECT(resout);
+        Rf_setAttrib(ptr, Rf_install("cpxresults"), resout);
+
         warnout = R_MakeExternalPtr(warning, tagCPLEXchannel, R_NilValue);
-        errout  = R_MakeExternalPtr(error,   tagCPLEXchannel, R_NilValue);
-        logout  = R_MakeExternalPtr(log,     tagCPLEXchannel, R_NilValue);
+        PROTECT(warnout);
+        Rf_setAttrib(ptr, Rf_install("cpxwarning"), warnout);
 
-        PROTECT(out = Rf_allocVector(VECSXP, 4));
-        SET_VECTOR_ELT(out, 0, resout);
-        SET_VECTOR_ELT(out, 1, warnout);
-        SET_VECTOR_ELT(out, 2, errout);
-        SET_VECTOR_ELT(out, 3, logout);
+        errout  = R_MakeExternalPtr(error, tagCPLEXchannel, R_NilValue);
+        PROTECT(errout);
+        Rf_setAttrib(ptr, Rf_install("cpxerror"), errout);
 
-        PROTECT(listn = Rf_allocVector(STRSXP, 4));
-        SET_STRING_ELT(listn, 0, Rf_mkChar("cpxresults"));
-        SET_STRING_ELT(listn, 1, Rf_mkChar("cpxwarning"));
-        SET_STRING_ELT(listn, 2, Rf_mkChar("cpxerror"));
-        SET_STRING_ELT(listn, 3, Rf_mkChar("cpxlog"));
-        Rf_setAttrib(out, R_NamesSymbol, listn);
+        logout  = R_MakeExternalPtr(log, tagCPLEXchannel, R_NilValue);
+        PROTECT(logout);
+        Rf_setAttrib(ptr, Rf_install("cpxlog"), logout);
 
-        UNPROTECT(2);
+        Rf_classgets(ptr, class);
+        UNPROTECT(6);
     }
 
-    return out;
+    return ptr;
 }
 
 
@@ -4729,7 +5096,7 @@ SEXP flushStdChannels(SEXP env) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXflushstdchannels(R_ExternalPtrAddr(env));
     if (status != 0) {
@@ -4744,18 +5111,36 @@ SEXP flushStdChannels(SEXP env) {
 
 /* -------------------------------------------------------------------------- */
 /* instantiate a new channel object */
-SEXP addChannel(SEXP env) {
+SEXP addChannel(SEXP env, SEXP ptrtype) {
 
     SEXP chout = R_NilValue;
+    SEXP ptr, class;
+
     CPXCHANNELptr newch = NULL;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     newch = CPXaddchannel(R_ExternalPtrAddr(env));
 
-    chout = R_MakeExternalPtr(newch, tagCPLEXchannel, R_NilValue);
+    if (newch != NULL) {
+        /* create channel pointer */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_chan_ptr"));
+    
+        chout = R_MakeExternalPtr(newch, tagCPLEXchannel, R_NilValue);
+        PROTECT(chout);
+        Rf_setAttrib(ptr, class, chout);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
+    }
+    else {
+        ptr = R_NilValue;
+    }
 
-    return chout;
+    return ptr;
 }
 
 
@@ -4766,8 +5151,8 @@ SEXP delChannel(SEXP env, SEXP newch) {
     SEXP out = R_NilValue;
     CPXCHANNELptr delch = NULL;
 
-    checkTypeOfEnv(env);
-    checkTypeOfChannel(newch);
+    checkEnv(env);
+    checkChannel(newch);
 
     delch = R_ExternalPtrAddr(newch);
 
@@ -4785,8 +5170,8 @@ SEXP disconnectChannel(SEXP env, SEXP newch) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfChannel(newch);
+    checkEnv(env);
+    checkChannel(newch);
 
     CPXdisconnectchannel(R_ExternalPtrAddr(env), R_ExternalPtrAddr(newch));
 
@@ -4800,8 +5185,8 @@ SEXP flushChannel(SEXP env, SEXP newch) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfChannel(newch);
+    checkEnv(env);
+    checkChannel(newch);
 
     CPXflushchannel(R_ExternalPtrAddr(env), R_ExternalPtrAddr(newch));
 
@@ -4815,9 +5200,9 @@ SEXP addFpDest(SEXP env, SEXP newch, SEXP cpfile) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfChannel(newch);
-    checkTypeOfFile(cpfile);
+    checkEnv(env);
+    checkChannel(newch);
+    checkFile(cpfile);
 
     status = CPXaddfpdest(R_ExternalPtrAddr(env), R_ExternalPtrAddr(newch),
                           R_ExternalPtrAddr(cpfile)
@@ -4838,9 +5223,9 @@ SEXP delFpDest(SEXP env, SEXP newch, SEXP cpfile) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfChannel(newch);
-    checkTypeOfFile(cpfile);
+    checkEnv(env);
+    checkChannel(newch);
+    checkFile(cpfile);
 
     status = CPXdelfpdest(R_ExternalPtrAddr(env), R_ExternalPtrAddr(newch),
                           R_ExternalPtrAddr(cpfile)
@@ -4863,7 +5248,7 @@ SEXP getTime(SEXP env) {
 
     double timest = 0;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXgettime(R_ExternalPtrAddr(env), &timest);
     if (status != 0) {
@@ -4894,8 +5279,8 @@ SEXP tuneParam(SEXP env, SEXP lp,
     const double *rdblPv;
     const char **rstrPv;
 
-    checkTypeOfEnv(env);
-    checkTypeOfProb(lp);
+    checkEnv(env);
+    checkProb(lp);
 
     if (intP == R_NilValue) {
         rintP = NULL;
@@ -4966,24 +5351,37 @@ SEXP tuneParam(SEXP env, SEXP lp,
 
 /* -------------------------------------------------------------------------- */
 /* set termination signal */
-SEXP setTerminate(SEXP env) {
+SEXP setTerminate(SEXP env, SEXP ptrtype) {
 
     SEXP termext = R_NilValue;
+    SEXP ptr, class;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     status = CPXsetterminate(R_ExternalPtrAddr(env), &terminate);
+
     if (status != 0) {
         status_message(R_ExternalPtrAddr(env), status);
-        termext = cpx_error(status);
+        ptr = cpx_error(status);
     }
     else {
+        /* create termination signal pointer */
+        PROTECT(ptr = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
+        
+        PROTECT(class = Rf_allocVector(STRSXP, 1));
+        SET_STRING_ELT(class, 0, Rf_mkChar("cplex_term_ptr"));
+
         termext = R_MakeExternalPtr((void *) &terminate,
                                     tagCPLEXtermination, R_NilValue
                                    );
+        PROTECT(termext);
+        Rf_setAttrib(ptr, class, termext);
+        Rf_classgets(ptr, class);
+        UNPROTECT(3);
     }
 
-    return termext;
+    return ptr;
 }
 
 
@@ -4993,8 +5391,8 @@ SEXP delTerminate(SEXP env, SEXP tsig) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
-    checkTypeOfTermination(tsig);
+    checkEnv(env);
+    checkTermination(tsig);
 
     status = CPXsetterminate(R_ExternalPtrAddr(env), NULL);
 
@@ -5018,7 +5416,7 @@ SEXP chgTerminate(SEXP env, SEXP tval) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
     terminate = Rf_asInteger(tval);
 
@@ -5032,11 +5430,561 @@ SEXP printTerminate(SEXP env) {
 
     SEXP out = R_NilValue;
 
-    checkTypeOfEnv(env);
+    checkEnv(env);
 
-    printf("%i\n", terminate);
+    Rprintf("%i\n", terminate);
 
     return out;
 }
 
 
+/* -------------------------------------------------------------------------- */
+/* add multiple MIP starts to a CPLEX problem object */
+SEXP addMIPstarts(SEXP env, SEXP lp, SEXP mcnt, SEXP nzcnt,
+                  SEXP beg, SEXP varindices, SEXP values,
+                  SEXP effortlevel, SEXP mipstartname
+                 ) {
+
+    SEXP out = R_NilValue;
+
+    int k, nnames;
+    const int *rbeg         = INTEGER(beg);
+    const int *rvarindices  = INTEGER(varindices);
+    const double *rvalues   = REAL(values);
+    const int *reffortlevel = INTEGER(effortlevel);
+    const char ** rmipstartname;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    if (mipstartname == R_NilValue) {
+        rmipstartname = NULL;
+    }
+    else {
+        nnames = Rf_length(mipstartname);
+        rmipstartname = R_Calloc(nnames, const char *);
+        for (k = 0; k < nnames; k++) {
+            rmipstartname[k] = CHAR(STRING_ELT(mipstartname, k));
+        }
+    }
+
+    status = CPXaddmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             Rf_asInteger(mcnt), Rf_asInteger(nzcnt),
+                             rbeg, rvarindices, rvalues, reffortlevel,
+                             (char **) rmipstartname
+                            );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    if (mipstartname != R_NilValue) {
+        R_Free(rmipstartname);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* modify or extend multiple MIP starts */
+SEXP chgMIPstarts(SEXP env, SEXP lp, SEXP mcnt, SEXP mipstartindices,
+                  SEXP nzcnt, SEXP beg, SEXP varindices,
+                  SEXP values, SEXP effortlevel
+                 ) {
+
+    SEXP out = R_NilValue;
+
+    const int *rmipstartindices = INTEGER(mipstartindices);
+    const int *rbeg             = INTEGER(beg);
+    const int *rvarindices      = INTEGER(varindices);
+    const double *rvalues       = REAL(values);
+    const int *reffortlevel     = INTEGER(effortlevel);
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXchgmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             Rf_asInteger(mcnt), rmipstartindices,
+                             Rf_asInteger(nzcnt),
+                             rbeg, rvarindices, rvalues, reffortlevel
+                            );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access a range of MIP starts of a CPLEX problem object */
+SEXP getMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out         = R_NilValue;
+    SEXP listn       = R_NilValue;
+    SEXP beg         = R_NilValue;
+    SEXP varindices  = R_NilValue;
+    SEXP values      = R_NilValue;
+    SEXP effortlevel = R_NilValue;
+
+    int ret, sp;
+    int lgbeg = 0;
+    int stsp  = 0;
+    int nzcnt = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    lgbeg = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
+
+    if (lgbeg > 0) {
+
+        PROTECT(beg         = Rf_allocVector(INTSXP, lgbeg));
+        PROTECT(effortlevel = Rf_allocVector(INTSXP, lgbeg));
+
+        ret = CPXgetmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                              &nzcnt, INTEGER(beg), NULL, NULL,
+                              INTEGER(effortlevel), 0, &sp,
+                              Rf_asInteger(begin), Rf_asInteger(end)
+                             );
+
+        if (ret == CPXERR_NEGATIVE_SURPLUS) {
+            stsp         -= sp;
+            PROTECT(varindices  = Rf_allocVector(INTSXP, stsp));
+            PROTECT(values      = Rf_allocVector(REALSXP, stsp));
+            status = CPXgetmipstarts(R_ExternalPtrAddr(env),
+                                     R_ExternalPtrAddr(lp), &nzcnt,
+                                     INTEGER(beg), INTEGER(varindices),
+                                     REAL(values), INTEGER(effortlevel),
+                                     stsp, &sp,
+                                     Rf_asInteger(begin), Rf_asInteger(end)
+                                  );
+            if (status != 0) {
+                status_message(R_ExternalPtrAddr(env), status);
+                out = cpx_error(status);
+            }
+            else {
+                PROTECT(out = Rf_allocVector(VECSXP, 4));
+                SET_VECTOR_ELT(out, 0, beg);
+                SET_VECTOR_ELT(out, 1, varindices);
+                SET_VECTOR_ELT(out, 2, values);
+                SET_VECTOR_ELT(out, 3, effortlevel);
+    
+                PROTECT(listn = Rf_allocVector(STRSXP, 4));
+                SET_STRING_ELT(listn, 0, Rf_mkChar("beg"));
+                SET_STRING_ELT(listn, 1, Rf_mkChar("varindices"));
+                SET_STRING_ELT(listn, 2, Rf_mkChar("values"));
+                SET_STRING_ELT(listn, 3, Rf_mkChar("effortlevel"));
+    
+                Rf_setAttrib(out, R_NamesSymbol, listn);
+    
+                UNPROTECT(2);
+            }
+            UNPROTECT(2);
+        }
+        else {
+            if (ret != 0) {
+                status_message(R_ExternalPtrAddr(env), ret);
+                out = cpx_error(ret);
+            }
+        }
+        UNPROTECT(2);
+    }
+
+    return out;
+
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access the number of MIP starts in the CPLEX problem object */
+SEXP getNumMIPstarts(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+    int nmips;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    nmips = CPXgetnummipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
+
+    out = Rf_ScalarInteger(nmips);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* delete a range MIP starts */
+SEXP delMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out = R_NilValue;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXdelmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             Rf_asInteger(begin), Rf_asInteger(end)
+                            );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* write a range of MIP starts of a CPLEX problem object to a file
+   in MST format */
+SEXP writeMIPstarts(SEXP env, SEXP lp, SEXP fname, SEXP begin, SEXP end) {
+
+    SEXP out = R_NilValue;
+
+    const char *rfname = CHAR(STRING_ELT(fname, 0));
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXwritemipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                               rfname, Rf_asInteger(begin), Rf_asInteger(end)
+                              );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+/* -------------------------------------------------------------------------- */
+/* read a file in the format MST and copy the information of all the MIP starts
+   contained in that file into a CPLEX problem object */
+SEXP readCopyMIPstarts(SEXP env, SEXP lp, SEXP fname) {
+
+    SEXP out = R_NilValue;
+
+    const char *rfname = CHAR(STRING_ELT(fname, 0));
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXreadcopymipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                  rfname
+                                 );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access a range of names of MIP starts */
+SEXP getMIPstartName(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out = R_NilValue;
+
+    int ret, sp, k;
+    int lgname = 0;
+    int stsp = 0;
+    char **name = NULL;
+    char *store = NULL;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    lgname = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
+
+    if (lgname > 0) {
+
+        ret = CPXgetmipstartname(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                 NULL, NULL, 0, &sp,
+                                 Rf_asInteger(begin), Rf_asInteger(end)
+                                );
+
+        if (ret == CPXERR_NEGATIVE_SURPLUS) {
+            stsp  -= sp;
+            name   = R_Calloc(lgname, char *);
+            store  = R_Calloc(stsp, char);
+            status = CPXgetmipstartname(R_ExternalPtrAddr(env),
+                                        R_ExternalPtrAddr(lp),
+                                        name, store, stsp, &sp,
+                                        Rf_asInteger(begin), Rf_asInteger(end)
+                                       );
+            if (status != 0) {
+                status_message(R_ExternalPtrAddr(env), status);
+                out = cpx_error(status);
+            }
+            else {
+                PROTECT(out = Rf_allocVector(STRSXP, lgname));
+                for (k = 0; k < lgname; k++) {
+                    SET_STRING_ELT(out, k, Rf_mkChar(name[k]));
+                }
+                UNPROTECT(1);
+            }
+            R_Free(name);
+            R_Free(store);
+        }
+        else {
+            if (ret != 0) {
+                status_message(R_ExternalPtrAddr(env), ret);
+                out = cpx_error(ret);
+            }
+        }
+    }
+
+    return out;
+
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* search for the index number of the specified MIP start */
+SEXP getMIPstartIndex(SEXP env, SEXP lp, SEXP iname) {
+
+    SEXP out = R_NilValue;
+
+    const char *riname = CHAR(STRING_ELT(iname, 0));
+
+    int rindex = -1;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXgetmipstartindex(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                 riname, &rindex
+                                );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+        out = cpx_error(status);
+    }
+    else {
+        out = Rf_ScalarInteger(rindex);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* refine a conflict in order to determine why a given MIP start is not
+   feasible */
+SEXP refineMIPstartConflict(SEXP env, SEXP lp, SEXP mipstartindex) {
+
+    SEXP out   = R_NilValue;
+    SEXP listn = R_NilValue;
+
+    int ncr = 0, ncc = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXrefinemipstartconflict(R_ExternalPtrAddr(env),
+                                       R_ExternalPtrAddr(lp),
+                                       Rf_asInteger(mipstartindex),
+                                       &ncr, &ncc
+                                      );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+        out = cpx_error(status);
+    }
+    else {
+        PROTECT(out = Rf_allocVector(VECSXP, 2));
+        SET_VECTOR_ELT(out, 0, Rf_ScalarInteger(ncr));
+        SET_VECTOR_ELT(out, 1, Rf_ScalarInteger(ncc));
+
+        PROTECT(listn = Rf_allocVector(STRSXP, 2));
+        SET_STRING_ELT(listn, 0, Rf_mkChar("confnumrows"));
+        SET_STRING_ELT(listn, 1, Rf_mkChar("confnumcols"));
+
+        Rf_setAttrib(out, R_NamesSymbol, listn);
+
+        UNPROTECT(2);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* identify a minimal conflict for the infeasibility of the MIP start or a
+   subset of the constraints in the model */
+SEXP refineMIPstartConflictExt(SEXP env, SEXP lp, SEXP mipstartindex,
+                               SEXP grpcnt, SEXP concnt, SEXP grppref,
+                               SEXP grpbeg, SEXP grpind, SEXP grptype
+                              ) {
+
+    SEXP out = R_NilValue;
+
+    const double *rgrppref = REAL(grppref);
+    const int *rgrpbeg     = INTEGER(grpbeg);
+    const int *rgrpind     = INTEGER(grpind);
+    const char *rgrptype   = CHAR(STRING_ELT(grptype, 0));
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXrefinemipstartconflictext(R_ExternalPtrAddr(env),
+                                          R_ExternalPtrAddr(lp),
+                                          Rf_asInteger(mipstartindex),
+                                          Rf_asInteger(grpcnt),
+                                          Rf_asInteger(concnt),
+                                          rgrppref, rgrpbeg, rgrpind, rgrptype
+                                         );
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* return the number of nonzeros in the Q matrix */
+SEXP getNumQPnz(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+    int nnz;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    nnz = CPXgetnumqpnz(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
+
+    out = Rf_ScalarInteger(nnz);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* return the number of variables that have quadratic objective coefficients */
+SEXP getNumQuad(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+    int nq;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    nq = CPXgetnumquad(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp));
+
+    out = Rf_ScalarInteger(nq);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access the quadratic coefficient in the matrix Q */
+SEXP getQPcoef(SEXP env, SEXP lp, SEXP i, SEXP j) {
+
+    SEXP out = R_NilValue;
+
+    double coef;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXgetqpcoef(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                          Rf_asInteger(i),Rf_asInteger(j), &coef
+                         );
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+        out = cpx_error(status);
+    }
+    else {
+        out = Rf_ScalarReal(coef);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access a range of columns of the matrix Q of a model with a quadratic
+   objective function */
+SEXP getQuad(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out     = R_NilValue;
+    SEXP listn   = R_NilValue;
+    SEXP qmatbeg = R_NilValue;
+    SEXP qmatind = R_NilValue;
+    SEXP qmatval = R_NilValue;
+
+    int ret, sp;
+    int qmatsp = 0;
+    int nnz    = 0;
+    int lgcols = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    lgcols = Rf_asInteger(end) - Rf_asInteger(begin) + 1;
+
+    if (lgcols > 0) {
+
+        PROTECT(qmatbeg = Rf_allocVector(INTSXP, lgcols));
+
+        ret = CPXgetquad(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                         &nnz, INTEGER(qmatbeg), NULL, NULL, 0, &sp,
+                         Rf_asInteger(begin), Rf_asInteger(end)
+                         );
+
+        if (ret == CPXERR_NEGATIVE_SURPLUS) {
+            qmatsp -= sp;
+            PROTECT(qmatind = Rf_allocVector(INTSXP, qmatsp));
+            PROTECT(qmatval = Rf_allocVector(REALSXP, qmatsp));
+            status = CPXgetcols(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                &nnz, INTEGER(qmatbeg), INTEGER(qmatind),
+                                REAL(qmatval), qmatsp, &sp,
+                                Rf_asInteger(begin), Rf_asInteger(end)
+                                );
+
+            if (status != 0) {
+                status_message(R_ExternalPtrAddr(env), status);
+                out = cpx_error(status);
+            }
+            else {
+                PROTECT(out = Rf_allocVector(VECSXP, 3));
+                SET_VECTOR_ELT(out, 0, qmatbeg);
+                SET_VECTOR_ELT(out, 1, qmatind);
+                SET_VECTOR_ELT(out, 2, qmatval);
+
+                PROTECT(listn = Rf_allocVector(STRSXP, 3));
+                SET_STRING_ELT(listn, 0, Rf_mkChar("qmatbeg"));
+                SET_STRING_ELT(listn, 1, Rf_mkChar("qmatind"));
+                SET_STRING_ELT(listn, 2, Rf_mkChar("qmatval"));
+                Rf_setAttrib(out, R_NamesSymbol, listn);
+
+                UNPROTECT(2);
+            }
+            UNPROTECT(2);
+        }
+        else {
+            if (ret != 0) {
+                status_message(R_ExternalPtrAddr(env), ret);
+                out = cpx_error(ret);
+            }
+        }
+
+        UNPROTECT(1);
+
+    }
+
+    return out;
+}

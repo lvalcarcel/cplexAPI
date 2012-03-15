@@ -11,13 +11,17 @@
   Consult the IBM ILOG CPLEX documentation for more detailed information.
 }
 \usage{
-  setTerminateCPLEX(env)
+  setTerminateCPLEX(env, ptrtype = "cplex_term")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -29,7 +33,7 @@
 
 \value{
   If successful, a pointer to a termination signal is returned, otherwise an
-  instance of class \code{\link{cpxerr}}.
+  instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

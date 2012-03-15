@@ -13,17 +13,22 @@
 }
 
 \usage{
-  getRedLpCPLEX(env, lp)
+  getRedLpCPLEX(env, lp, ptrtype = "cplex_prob")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -33,8 +38,9 @@
 }
 
 \value{
-  Pointer for the presolved problem if successful, otherwise an instance of
-  class \code{\link{cpxerr}}.
+  Pointer for the presolved problem if successful (an instance of class
+  \code{"\linkS4class{cplexPtr}"}), otherwise an instance of
+  class \code{"\linkS4class{cplexError}"} or \code{NULL}.
 }
 
 \references{

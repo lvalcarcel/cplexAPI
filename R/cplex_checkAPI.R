@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplex_checkAPI.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 #
-#  Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+#  Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -43,8 +43,8 @@ checkCopyLpCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs, sense,
     }
 
     status <- .Call("checkCopyLp", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -93,8 +93,8 @@ checkCopyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs,
     }
 
     status <- .Call("checkCopyLpwNames", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -110,6 +110,23 @@ checkCopyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs,
                     Crngval,
                     Ccnames,
                     Crnames
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+checkCopyQuadCPLEX <- function(env, lp, qmatbeg, qmatcnt, qmatind, qmatval) {
+
+    status <- .Call("checkCopyQuad", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(qmatbeg),
+                    as.integer(qmatcnt),
+                    as.integer(qmatind),
+                    as.numeric(qmatval)
               )
 
     return(status)
@@ -152,8 +169,8 @@ checkAddRowsCPLEX <- function(env, lp, ncols, nrows, nnz,
     }
 
     status <- .Call("checkAddRows", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(nrows),
                     as.integer(nnz),
@@ -197,8 +214,8 @@ checkAddColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
     }
 
     status <- .Call("checkAddCols", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(nnz),
                     as.numeric(objf),
@@ -219,8 +236,8 @@ checkAddColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
 checkChgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 
     status <- .Call("checkChgCoefList", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nnz),
                     as.integer(ia),
                     as.integer(ja),
@@ -236,8 +253,8 @@ checkChgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 checkCopyColTypeCPLEX <- function(env, lp, xctype) {
 
     status <- .Call("checkCopyColType", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(paste(xctype, collapse = ""))
               )
 
@@ -272,8 +289,8 @@ checkValsCPLEX <- function(env, lp, nval,
     }
 
     status <- .Call("checkVals", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nval),
                     Crind,
                     Ccind,

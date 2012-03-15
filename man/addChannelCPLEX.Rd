@@ -13,13 +13,17 @@
 }
 
 \usage{
-  addChannelCPLEX(env)
+  addChannelCPLEX(env, ptrtype = "cplex_chan")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -29,8 +33,9 @@
 }
 
 \value{
-  If successful, addChannelCPLEX returns a pointer to the new channel object;
-  otherwise, it returns \code{NULL}.
+  If successful, addChannelCPLEX returns a pointer to the new channel object
+  (an instance of class \code{"\linkS4class{cplexPtr}"}); otherwise, it returns
+  \code{NULL}.
 }
 
 \references{

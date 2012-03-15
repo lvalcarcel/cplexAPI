@@ -18,8 +18,9 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{parm}{
     Constant or reference number of the desired parameter.
@@ -36,7 +37,7 @@
   \item{defvalue }{default value}
   \item{minvalue }{minimum value}
   \item{maxvalue }{maximum value}
-  otherwise an instance of class \code{\link{cpxerr}}.
+  otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

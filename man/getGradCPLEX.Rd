@@ -19,12 +19,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
   \item{j}{
 	An integer specifying the index of the column of interest.
@@ -42,7 +44,7 @@
                which they appear in the basis.}
   \item{y }{coefficients of the \code{j}-th column relative to the current
             basis.}
-  otherwise an instance of class \code{\link{cpxerr}}.
+  otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

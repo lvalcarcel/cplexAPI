@@ -194,6 +194,7 @@
 \alias{CPX_PARAM_CUTUP}
 \alias{CPX_PARAM_DATACHECK}
 \alias{CPX_PARAM_DEPIND}
+\alias{CPX_PARAM_DETTILIM}
 \alias{CPX_PARAM_DISJCUTS}
 \alias{CPX_PARAM_DIVETYPE}
 \alias{CPX_PARAM_DPRIIND}
@@ -353,6 +354,7 @@
 \alias{CPX_SOLUTIONTARGET_AUTO}
 \alias{CPX_SOLUTIONTARGET_FIRSTORDER}
 \alias{CPX_SOLUTIONTARGET_OPTIMALCONVEX}
+\alias{CPX_STAT_ABORT_DETTIME_LIM}
 \alias{CPX_STAT_ABORT_DUAL_OBJ_LIM}
 \alias{CPX_STAT_ABORT_IT_LIM}
 \alias{CPX_STAT_ABORT_OBJ_LIM}
@@ -360,6 +362,7 @@
 \alias{CPX_STAT_ABORT_TIME_LIM}
 \alias{CPX_STAT_ABORT_USER}
 \alias{CPX_STAT_CONFLICT_ABORT_CONTRADICTION}
+\alias{CPX_STAT_CONFLICT_ABORT_DETTIME_LIM}
 \alias{CPX_STAT_CONFLICT_ABORT_IT_LIM}
 \alias{CPX_STAT_CONFLICT_ABORT_MEM_LIM}
 \alias{CPX_STAT_CONFLICT_ABORT_NODE_LIM}
@@ -408,6 +411,7 @@
 \alias{CPX_SUM_X}
 \alias{CPX_TUNE_ABORT}
 \alias{CPX_TUNE_AVERAGE}
+\alias{CPX_TUNE_DETTILIM}
 \alias{CPX_TUNE_MINMAX}
 \alias{CPX_TUNE_TILIM}
 \alias{CPX_TYPE_ANY}
@@ -434,6 +438,8 @@
 \alias{CPXMIP_ABORT_FEAS}
 \alias{CPXMIP_ABORT_INFEAS}
 \alias{CPXMIP_ABORT_RELAXED}
+\alias{CPXMIP_DETTIME_LIM_FEAS}
+\alias{CPXMIP_DETTIME_LIM_INFEAS}
 \alias{CPXMIP_FAIL_FEAS_NO_TREE}
 \alias{CPXMIP_FAIL_FEAS}
 \alias{CPXMIP_FAIL_INFEAS_NO_TREE}
@@ -532,6 +538,7 @@
     \code{CPX_STAT_FEASIBLE_RELAXED_QUAD}  \tab \code{18} \cr
     \code{CPX_STAT_OPTIMAL_RELAXED_QUAD}   \tab \code{19} \cr
     \code{CPX_STAT_FEASIBLE}               \tab \code{23} \cr
+    \code{CPX_STAT_ABORT_DETTIME_LIM}      \tab \code{25} \cr
   }
 }
 
@@ -700,6 +707,7 @@ Used as possible values for \code{CPX_PARAM_LPMETHOD}, \code{CPX_PARAM_QPMETHOD}
     \code{CPX_STAT_CONFLICT_ABORT_OBJ_LIM}       \tab \code{36} \cr
     \code{CPX_STAT_CONFLICT_ABORT_MEM_LIM}       \tab \code{37} \cr
     \code{CPX_STAT_CONFLICT_ABORT_USER}          \tab \code{38} \cr
+    \code{CPX_STAT_CONFLICT_ABORT_DETTIME_LIM}   \tab \code{39} \cr
   }
 }
 
@@ -802,6 +810,7 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
     \code{CPX_PARAM_TUNINGTILIM}         \tab \code{1112} \cr
     \code{CPX_PARAM_TUNINGDISPLAY}       \tab \code{1113} \cr
     \code{CPX_PARAM_WRITELEVEL}          \tab \code{1114} \cr
+    \code{CPX_PARAM_DETTILIM}            \tab \code{1127} \cr
     \code{CPX_PARAM_FILEENCODING}        \tab \code{1129} \cr
     \code{CPX_PARAM_APIENCODING}         \tab \code{1130} \cr
     \code{CPX_PARAM_SOLUTIONTARGET}      \tab \code{1131} \cr
@@ -825,8 +834,9 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
 %------------------------------------------------------------------------------
 \section{Values for incomplete tuning}{
   \tabular{ll}{
-    \code{CPX_TUNE_ABORT} \tab \code{1} \cr
-    \code{CPX_TUNE_TILIM} \tab \code{2} \cr
+    \code{CPX_TUNE_ABORT}    \tab \code{1} \cr
+    \code{CPX_TUNE_TILIM}    \tab \code{2} \cr
+    \code{CPX_TUNE_DETTILIM} \tab \code{3} \cr
   }
 }
 
@@ -1069,6 +1079,8 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
     \code{CPXMIP_POPULATESOL_LIM}       \tab \code{128} \cr
     \code{CPXMIP_OPTIMAL_POPULATED}     \tab \code{129} \cr
     \code{CPXMIP_OPTIMAL_POPULATED_TOL} \tab \code{130} \cr
+    \code{CPXMIP_DETTIME_LIM_FEAS}      \tab \code{131} \cr
+    \code{CPXMIP_DETTIME_LIM_INFEAS}    \tab \code{132} \cr
   }
 }
 

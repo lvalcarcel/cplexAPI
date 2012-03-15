@@ -11,12 +11,20 @@
 }
 
 \usage{
-  openProbCPLEX(pname = "CPLEX_PROB")
+  openProbCPLEX(pname = "CPLEX_PROB",
+                ptrtypeENV = "cplex_env",
+                ptrtypePROB = "cplex_prob")
 }
 
 \arguments{
   \item{pname}{
     A single character string containing the name of the problem object.
+  }
+  \item{ptrtypeENV}{
+    A name for the IBM ILOG CPLEX environment pointer object.
+  }
+  \item{ptrtypePROB}{
+    A name for the IBM ILOG CPLEX problem pointer object.
   }
 }
 
@@ -31,7 +39,8 @@
   \item{lp  }{A pointer to the CPLEX problem object as returned by
               \code{\link{initProbCPLEX}}.}
   If \code{openEnvCPLEX()} failes, \code{env} will be of class
-  \code{\link{cpxerr}} and \code{lp} will be \code{NULL}.
+  \code{"\linkS4class{cplexError}"} and \code{lp} will be \code{NULL}. Each list element is
+  an object of class \code{"\linkS4class{cplexPtr}"}.
 }
 
 \references{

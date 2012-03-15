@@ -18,12 +18,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
 }
 
@@ -37,7 +39,7 @@
   \item{cstat }{basis status of the columns in the CPLEX problem object}
   \item{rstat }{basis status of the artificial, slack, or surplus variable
                 associated with each row in the constraint matrix}
-  otherwise an instance of class \code{\link{cpxerr}}.
+  otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

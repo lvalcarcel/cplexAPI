@@ -1,7 +1,7 @@
 /* cplexR.h
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 
-   Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+   Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -24,8 +24,7 @@
 
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <ilcplex/cplex.h>
+
 
 /* avoid remapping of Rf_<function> to <function> in R header files */
 #ifndef R_NO_REMAP
@@ -40,6 +39,19 @@
 #include <R.h>
 #include <Rinternals.h>
 
+
+/* http://www.stats.ox.ac.uk/~ripley/Win64/W64porting.html */
+
+#if defined(WIN64) && !defined(_MSC_VER)
+#define CHECK_FOR_WIN64
+#define _MSC_VER
+#endif
+
+#include <ilcplex/cplex.h>
+
+#ifdef CHECK_FOR_WIN64
+#undef _MSC_VER
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -124,7 +136,7 @@
 
 #define checkTermination(ter) do { \
     checkIfNil(ter); \
-    checkTypeOfChannel(ter); \
+    checkTypeOfTermination(ter); \
 } while (0)
 
 

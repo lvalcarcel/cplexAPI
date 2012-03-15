@@ -11,7 +11,13 @@
   more detailed information.
 }
 \usage{
-  openEnvCPLEX()
+  openEnvCPLEX(ptrtype = "cplex_env")
+}
+
+\arguments{
+  \item{ptrtype}{
+    A name for the pointer object.
+  }
 }
 
 \details{
@@ -20,8 +26,9 @@
 }
 
 \value{
-  If successful, a pointer to the CPLEX environment is returnd, otherwise an
-  instance of class \code{\link{cpxerr}}.
+  If successful, a pointer to the CPLEX environment is returnd
+  (an instance of class \code{"\linkS4class{cplexPtr}"}), otherwise an
+  instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

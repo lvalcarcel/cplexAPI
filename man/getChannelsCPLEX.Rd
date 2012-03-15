@@ -13,13 +13,17 @@
 }
 
 \usage{
-  getChannelsCPLEX(env)
+  getChannelsCPLEX(env, ptrtype = "cplex_chan")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -34,7 +38,8 @@
   \item{cpxwarning }{address of the channel corresponding to \code{cpxwarning}}
   \item{cpxerror }{address of the channel corresponding to \code{cpxerror}}
   \item{cpxlog }{address of the channel corresponding to \code{cpxlog}}
-  otherwise an instance of class \code{\link{cpxerr}}.
+  otherwise an instance of class \code{"\linkS4class{cplexError}"}. Each list element is an
+  object of class \code{"\linkS4class{cplexPtr}"}.
 }
 
 \references{

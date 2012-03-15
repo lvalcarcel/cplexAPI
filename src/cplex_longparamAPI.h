@@ -1,7 +1,7 @@
 /* cplex_longparamAPI.h
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 
-   Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+   Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de

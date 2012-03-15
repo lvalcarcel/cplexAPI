@@ -54,34 +54,39 @@ Ini\-tia\-tive
 The package \pkgname{} requires a working installation of \prgname{\cplex}.
 
 \section{Installation}
+The package \pkgname{} depends on a working installation of \prgname{\cplex}.
 See \Comp{INSTALL} for installation instructions and platform specific details.
 
 \section{Usage}
+\noindent
+At first, load the library.
+<<>>=
+library(cplexAPI)
+@
 
 \subsection{Creating and solving a linear optimization problem}
 
-In the following, an example lp-problem will be created and solved:
+In the following, an example linear programming problem will be created and
+solved:
 \vspace{1em}
 
 \noindent
 \hspace{.5in} maximize
-$$z = 5 x_1 + 4 x_2 + 3 x_3$$
+\[
+z = 5 x_1 + 4 x_2 + 3 x_3
+\]
 \hspace{.5in} subject to
-$$
+\[
 \begin{array}{r@{\:}c@{\:}r@{\:}c@{\:}r@{\:}c@{\:}r}
-2 x_1 &+& 3 x_2 &+&   x_3 & \leq  5 \\
-4 x_1 &+&   x_2 &+& 2 x_3 & \leq 11 \\
-3 x_1 &+& 4 x_2 &+& 2 x_3 & \leq  8 \\
+2 x_1 &+& 3 x_2 &+&   x_3 & \leq & 5 \\
+4 x_1 &+&   x_2 &+& 2 x_3 & \leq &11 \\
+3 x_1 &+& 4 x_2 &+& 2 x_3 & \leq & 8 \\
 \end{array}
-$$
-\hspace{.5in} where all variables are non-negative
-$$x_1 \geq 0, \ x_2 \geq 0, \ x_3 \geq 0$$
+\]
+With all variables being non-negative.
 
+\newpage
 \noindent
-Load the library.
-<<>>=
-library(cplexAPI)
-@
 Open a \prgname{\cplex{}} environment.
 <<>>=
 env <- openEnvCPLEX()
@@ -167,9 +172,119 @@ readCopyProbCPLEX(env, lp, "prob.lp")
 Free memory, allacated to the problem object.
 <<>>=
 delProbCPLEX(env, prob)
+@
+Close \prgname{\cplex{}} environment.
+<<>>=
 closeEnvCPLEX(env)
 @
 
+\subsection{Creating and solving a mixed integer programming (MIP) problem}
+
+In the following, an example MIP will be created and solved:
+\footnote{Taken from \prgname{\cplex{}} example file \texttt{mipex1.c}.}
+\vspace{1em}
+
+\noindent
+\hspace{.5in} maximize
+\[
+z = x_1 + 2 x_2 + 3 x_3 + x_4
+\]
+\hspace{.5in} subject to
+\[
+\begin{array}{r@{\:}c@{\:}r@{\:}c@{\:}r@{\:}c@{\:}r@{\:}c@{\:}r}
+-  x_1 &+&   x_2 &+& x_3 &+&  10 x_4 & \leq & 20 \\
+   x_1 &-& 3 x_2 &+& x_3 & &         & \leq & 30 \\
+       & &   x_2 & &     &-& 3.5 x_4 &    = &  0 \\
+\end{array}
+\]
+With all variables being non-negative, $x_1 \leq 40$ and
+$x_4 \in \{2, 3, 4\}$ ($x_4$ is integer).
+
+\vspace{1em}
+\noindent
+Open a \prgname{\cplex{}} environment.
+<<>>=
+env <- openEnvCPLEX()
+@
+Create a problem object.
+<<>>=
+prob <- initProbCPLEX(env, pname = "example")
+@
+Prepare data structures for the problem object.
+Number of columns, rows and non-zero elements.
+<<>>=
+nc <- 4
+nr <- 3
+nz <- 9
+@
+Objective function.
+<<>>=
+obj <- c(1.0, 2.0, 3.0, 1.0)
+@
+Right hand side.
+<<>>=
+rhs <- c(20.0, 30.0, 0.0)
+@
+Sense of the right hand side.
+<<>>=
+sense <- c("L", "L", "E")
+@
+Vatiable types.
+<<>>=
+ctype <- c("C", "C", "C", "I")
+@
+Variable lower bounds.
+<<>>=
+lb <- c(0.0, 0.0, 0.0, 2.0)
+@
+Variable upper bounds.
+<<>>=
+ub <- c(40.0, CPX_INFBOUND, CPX_INFBOUND, 3.0)
+@
+The constraint matrix is passed in column major order format. \textbf{Be
+careful here:} all indices start with 0! Begin indices of rows.
+<<>>=
+beg <- c(0, 2, 5, 7)
+@
+Number of non-zero elements per row.
+<<>>=
+cnt <- c(2, 3, 2, 2)
+@
+Column indices.
+<<>>=
+ind <- c(0, 1, 0, 1, 2, 0, 1, 0, 2)
+@
+Non-zero elements.
+<<>>=
+val <- c(-1.0, 1.0, 1.0, -3.0, 1.0, 1.0, 1.0, 10.0, -3.5)
+@
+Load problem data.
+<<>>=
+copyLpCPLEX(env, prob, nc, nr, CPX_MAX, obj, rhs, sense,
+            beg, cnt, ind, val, lb, ub)
+@
+Set Variable types.
+<<>>=
+copyColTypeCPLEX(env, prob, ctype)
+@
+Solve the problem using MIP.
+<<>>=
+mipoptCPLEX(env, prob)
+@
+Retrieve solution after optimization.
+<<>>=
+solutionCPLEX(env, prob)
+@
+Free memory, allacated to the problem object.
+<<>>=
+delProbCPLEX(env, prob)
+@
+Close \prgname{\cplex{}} environment.
+<<>>=
+closeEnvCPLEX(env)
+@
+
+\newpage
 \subsection{Setting control prarmeters}
 Open a new environment.
 <<>>=
@@ -192,16 +307,54 @@ setDblParmCPLEX(pe, CPX_PARAM_EPRHS, 1E-09)
 @
 Retrieve parameters which are not set at their default values.
 <<>>=
-(parm <- getChgParmCPLEX(pe))
+(param <- getChgParmCPLEX(pe))
 @
-Retrieve names of theese parameters.
+Retrieve names of these parameters.
 <<>>=
-sapply(parm, getParmNameCPLEX, env = pe)
+mapply(getParmNameCPLEX, param, MoreArgs = list(env = pe))
 @
 Close the envoronment.
 <<>>=
 closeEnvCPLEX(pe)
 @
+
+\section{Function names}
+
+\subsection{Searching}
+
+The function names in \pkgname{} are different from the names in
+\prgname{\cplex}, e.\,g. the function \texttt{addColsCPLEX} in \pkgname{} is
+called \texttt{CPXaddcols} in \prgname{\cplex}. The directory \texttt{inst/}
+containes a file \texttt{c2r.map} which maps a \prgname{\cplex} function name to
+the corresponding \pkgname{} function name. Additionally, all man-pages contain
+an alias to the \prgname{\cplex} function name. The call
+<<>>=
+help("CPXaddcols")
+@
+will bring up the man-page of \texttt{addColsCPLEX}.
+
+\subsection{Mapping}
+
+The file \texttt{c2r.map} in \texttt{inst/} maps the \pkgname{} function names
+to the orininal \prgname{\cplex} function names of its C-API. To use the latter,
+run
+<<>>=
+c2r <- system.file(package = "cplexAPI", "c2r.map")
+source(c2r)
+@
+now either
+<<>>=
+pr1 <- openEnvCPLEX()
+closeEnvCPLEX(pr1)
+@
+or the original functions
+<<>>=
+pr2 <- CPXopenCPLEX()
+CPXcloseCPLEX(pr2)
+@
+work both. Keep in mind that the mapping only affects the function names not the
+arguments of a function.
+\end{document}
 
 
 \end{document}

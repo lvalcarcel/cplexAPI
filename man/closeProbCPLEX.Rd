@@ -9,17 +9,14 @@
   CPLEX problem object.
 }
 \usage{
-  closeProbCPLEX(env, lp)
+  closeProbCPLEX(prob)
 }
 
 \arguments{
-  \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
-  }
-  \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+  \item{prob}{
+    A list containing a pointer to an IBM ILOG CPLEX environment and a Pointer
+    to an IBM ILOG CPLEX problem object. Both elements are objects of class
+    \code{"\linkS4class{cplexPtr}"} as returned by \code{\link{openProbCPLEX}}.
   }
 }
 
@@ -45,8 +42,7 @@
 }
 
 \seealso{
-  \code{\link{openProbCPLEX}}, \code{\link{closeEnvCPLEX}},
-  \code{\link{delProbCPLEX}}
+  \code{\link{openProbCPLEX}}
 }
 
 \keyword{ optimize }

@@ -18,20 +18,22 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
-}
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
+  }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
-}
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
+  }
   \item{nnames}{
 	A vector that specifies the total number of variable names to be changed.
-}
+  }
   \item{ind}{
 	A vector containing the numeric indices indices of the variables for
 	which the names are to be changed.
-}
+  }
   \item{names}{
 	A vector containing the strings of the new variable names for
 	the columns specified in \code{ind}.

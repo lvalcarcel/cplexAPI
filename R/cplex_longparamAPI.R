@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplex_longparamAPI.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 #
-#  Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+#  Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -33,7 +33,7 @@
 setLongParmCPLEX <- function(env, parm, value) {
 
     status <- .Call("setLongParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(parm),
                     #as.integer(value)
                     as.numeric(value)
@@ -48,11 +48,11 @@ setLongParmCPLEX <- function(env, parm, value) {
 getLongParmCPLEX <- function(env, parm) {
 
     value <- .Call("getLongParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(value)
+    return(cplexError(value))
 }
 
 
@@ -61,11 +61,11 @@ getLongParmCPLEX <- function(env, parm) {
 getInfoLongParmCPLEX <- function(env, parm) {
 
     param <- .Call("getInfoLongParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(param)
+    return(cplexError(param))
 }
 
 

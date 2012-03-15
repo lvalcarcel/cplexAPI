@@ -13,16 +13,20 @@
 }
 
 \usage{
-  initProbCPLEX(env, pname = "CPLEX_PROB")
+  initProbCPLEX(env, pname = "CPLEX_PROB", ptrtype = "cplex_prob")
 }
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{pname}{
     A single character string containing the name of the problem object.
+  }
+  \item{ptrtype}{
+    A name for the pointer object.
   }
 }
 
@@ -32,8 +36,9 @@
 }
 
 \value{
-  If successful, a pointer to the CPLEX problem object is returnd, otherwise an
-  instance of class \code{\link{cpxerr}}.
+  If successful, a pointer to the CPLEX problem object is returnd
+  (an instance of class \code{"\linkS4class{cplexPtr}"}), otherwise an
+  instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

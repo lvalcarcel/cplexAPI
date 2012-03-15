@@ -28,7 +28,7 @@
 }
 
 \value{
-  Zero if successful, otherwise an instance of class \code{\link{cpxerr}}.
+  Zero if successful, otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

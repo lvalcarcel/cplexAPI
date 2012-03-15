@@ -18,12 +18,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
   \item{fname}{
     Single character value giving the filname to write to.
@@ -36,7 +38,7 @@
 }
 
 \value{
-  Zero if successful, otherwise an instance of class \code{\link{cpxerr}}.
+  Zero if successful, otherwise an instance of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

@@ -1,4 +1,4 @@
-AC_INIT([cplexAPI], [1.1.8], [geliudie@uni-duesseldorf.de])
+AC_INIT([cplexAPI], [1.2.1], [geliudie@uni-duesseldorf.de])
 
 
 dnl # --------------------------------------------------------------------
@@ -95,7 +95,7 @@ CPPFLAGS="${CPPFLAGS} ${CPLEX_CPPFLAGS}"
 
 
 dnl # set libraries to link to
-INCL="-lcplex -lm -lpthread"
+INCL="-lcplex -lm -pthread"
 
 
 dnl # --------------------------------------------------------------------
@@ -109,15 +109,22 @@ CPLEX_CFLAGS="-Wall"
 
 dnl # OS dependent
 if test [ "${OS_NAME}" = "Darwin" ] ; then
-    INCL="${INCL} -framework CoreFoundation -framework IOKit"
+    INCL="${INCL} -lpthread -framework CoreFoundation -framework IOKit"
+    if test [ "${MACHINE_NAME}" = "x86_64" ] ; then
+        INCL="${INCL} -m64"
+dnl # MacOS X amd64: remove Incorrect warning at compile-time
+        LIBS="${LIBS} -Wl,-no_compact_unwind"
+    else
+        INCL="${INCL} -m32 -fno-strict-aliasing"
+    fi
     #CPLEX_CFLAGS="${CPLEX_CFLAGS} -ansi"
 else
-    CPLEX_CFLAGS="${CPLEX_CFLAGS} -std=c99"
-    if test [ "${MACHINE_NAME}" = "x86_64" ] ; then
-        CPLEX_CFLAGS="${CPLEX_CFLAGS} -m64"
-    else
-        CPLEX_CFLAGS="${CPLEX_CFLAGS} -m32"
-    fi
+    CPLEX_CFLAGS="${CPLEX_CFLAGS} -pthread -std=c99"
+#    if test [ "${MACHINE_NAME}" = "x86_64" ] ; then
+#        CPLEX_CFLAGS="${CPLEX_CFLAGS} -m64"
+#    else
+#        CPLEX_CFLAGS="${CPLEX_CFLAGS} -m32"
+#    fi
 fi
 
 

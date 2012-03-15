@@ -1,2 +1,2 @@
-PKG_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I${CPLEX_PATH}/CPLEX_Studio_Academic123/cplex/include
-PKG_LIBS=-L${CPLEX_PATH}/CPLEX_Studio_Academic123/cplex/lib/x86_windows_vs2010/stat_mta -lm -m32 -lcplex123
+PKG_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I"${CPLEX_STUDIO_DIR}\cplex\include"
+PKG_LIBS=-L"${CPLEX_STUDIO_LIB32}" -L"${CPLEX_STUDIO_LIB64}" -lm -lcplex124

@@ -2,10 +2,10 @@
 #                     R Interface to C API of IBM ILOG CPLEX                   #
 #------------------------------------------------------------------------------#
 
-#  cplexCOnst.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+#  cplexConst.R
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 #
-#  Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+#  Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -27,7 +27,7 @@
 
 
 #------------------------------------------------------------------------------#
-#              global variables (from cpxconst.h [12.3.0.0])                   #
+#              global variables (from cpxconst.h [12.4.0.0])                   #
 #------------------------------------------------------------------------------#
 
 # CPX_INFBOUND:  Any bound bigger than this is treated as infinity
@@ -63,6 +63,7 @@ CPX_STAT_OPTIMAL_RELAXED_INF    <- as.integer(17)
 CPX_STAT_FEASIBLE_RELAXED_QUAD  <- as.integer(18)
 CPX_STAT_OPTIMAL_RELAXED_QUAD   <- as.integer(19)
 CPX_STAT_FEASIBLE               <- as.integer(23)
+CPX_STAT_ABORT_DETTIME_LIM      <- as.integer(25)
 
 
 #------------------------------------------------------------------------------#
@@ -197,6 +198,7 @@ CPX_STAT_CONFLICT_ABORT_NODE_LIM      <- as.integer(35)
 CPX_STAT_CONFLICT_ABORT_OBJ_LIM       <- as.integer(36)
 CPX_STAT_CONFLICT_ABORT_MEM_LIM       <- as.integer(37)
 CPX_STAT_CONFLICT_ABORT_USER          <- as.integer(38)
+CPX_STAT_CONFLICT_ABORT_DETTIME_LIM   <- as.integer(39)
 
 
 #------------------------------------------------------------------------------#
@@ -290,6 +292,7 @@ CPX_PARAM_TUNINGREPEAT        <- as.integer(1111)
 CPX_PARAM_TUNINGTILIM         <- as.integer(1112)
 CPX_PARAM_TUNINGDISPLAY       <- as.integer(1113)
 CPX_PARAM_WRITELEVEL          <- as.integer(1114)
+CPX_PARAM_DETTILIM            <- as.integer(1127)
 CPX_PARAM_FILEENCODING        <- as.integer(1129)
 CPX_PARAM_APIENCODING         <- as.integer(1130)
 CPX_PARAM_SOLUTIONTARGET      <- as.integer(1131)
@@ -308,8 +311,9 @@ CPX_TUNE_MINMAX  <- as.integer(2)
 
 #------------------------------------------------------------------------------#
 # Values for incomplete tuning
-CPX_TUNE_ABORT <- as.integer(1)
-CPX_TUNE_TILIM <- as.integer(2)
+CPX_TUNE_ABORT     <- as.integer(1)
+CPX_TUNE_TILIM     <- as.integer(2)
+CPX_TUNE_DETTILIM  <- as.integer(3)
 
 
 #------------------------------------------------------------------------------#
@@ -509,6 +513,8 @@ CPXMIP_FEASIBLE              <- as.integer(127)
 CPXMIP_POPULATESOL_LIM       <- as.integer(128)
 CPXMIP_OPTIMAL_POPULATED     <- as.integer(129)
 CPXMIP_OPTIMAL_POPULATED_TOL <- as.integer(130)
+CPXMIP_DETTIME_LIM_FEAS      <- as.integer(131)
+CPXMIP_DETTIME_LIM_INFEAS    <- as.integer(132)
 
 # Valid purgeable values for adding usercuts and lazyconstraints
 CPX_USECUT_FORCE             <- as.integer(0)

@@ -13,7 +13,7 @@
 }
 
 \usage{
-  openFileCPLEX(fname, ftype = "w")
+  openFileCPLEX(fname, ftype = "w", ptrtype = "cplex_file")
 }
 
 \arguments{
@@ -24,6 +24,9 @@
     Character string according to the syntax of the standard C function
     \code{fopen}.
   }
+  \item{ptrtype}{
+    A name for the pointer object.
+  }
 }
 
 \details{
@@ -32,7 +35,8 @@
 }
 
 \value{
-  A pointer to the log file.
+  A pointer to the log file (an instance of class
+  \code{"\linkS4class{cplexPtr}"}) or \code{NULL}.
 }
 
 \references{

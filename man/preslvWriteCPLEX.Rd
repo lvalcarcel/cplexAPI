@@ -18,12 +18,14 @@
 
 \arguments{
   \item{env}{
-    Pointer to an IBM ILOG CPLEX environment as returned by
-    \code{\link{openEnvCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{openEnvCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX environment.
   }
   \item{lp}{
-    Pointer to an IBM ILOG CPLEX problem object as returned by
-    \code{\link{initProbCPLEX}}.
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
   \item{fname}{
     Single character value giving the file name to write to.
@@ -38,7 +40,7 @@
 \value{
   If successful a dingle numeric value containing the objective value difference
   between the original problem and the presolved problem, otherwise an instance
-  of class \code{\link{cpxerr}}.
+  of class \code{"\linkS4class{cplexError}"}.
 }
 
 \references{

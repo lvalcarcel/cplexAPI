@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplexAPI.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
 #
-#  Copyright (C) 2011 Gabriel Gelius-Dietrich, Department for Bioinformatics,
+#  Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -36,15 +36,15 @@ getErrorStrCPLEX <- function(err, env = NULL) {
         Cenv <- as.null(env)
     }
     else {
-        Cenv <- env
+        Cenv <- ptr(env)
     }
 
     errmsg <- .Call("getErrorStr", PACKAGE = "cplexAPI",
                     Cenv,
                     as.integer(err)
               )
-    return(errmsg)
 
+    return(errmsg)
 }
 
 
@@ -53,11 +53,11 @@ getErrorStrCPLEX <- function(err, env = NULL) {
 getStatStrCPLEX <- function(env, stat) {
 
     statmsg <- .Call("getStatStr", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(stat)
               )
-    return(statmsg)
 
+    return(statmsg)
 }
 
 
@@ -65,16 +65,25 @@ getStatStrCPLEX <- function(env, stat) {
 
 closeEnvCPLEX <- function(env) {
 
-    status <- .Call("closeEnv", env, PACKAGE = "cplexAPI")
-    return(status)
+    status <- .Call("closeEnv", PACKAGE = "cplexAPI",
+                    ptr(env)
+              )
 
+    return(cplexError(status))
 }
 
 
 #------------------------------------------------------------------------------#
 
-openEnvCPLEX <- function() {
-    return(.Call("openEnv", PACKAGE = "cplexAPI"))
+openEnvCPLEX <- function(ptrtype = "cplex_env") {
+
+    env <- .Call("openEnv", PACKAGE = "cplexAPI",
+                 as.character(ptrtype)
+           )
+
+    envP <- cplex_EnvPointer(env)
+
+    return(cplexError(envP))
 }
 
 
@@ -82,30 +91,44 @@ openEnvCPLEX <- function() {
 
 delProbCPLEX <- function(env, lp) {
 
-    status <- .Call("delProb", env, lp, PACKAGE = "cplexAPI")
-    return(status)
+    status <- .Call("delProb", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp)
+              )
 
+    return(cplexError(status))
 }
 
 
 #------------------------------------------------------------------------------#
 
-initProbCPLEX <- function(env, pname = "CPLEX_PROB") {
+initProbCPLEX <- function(env, pname = "CPLEX_PROB", ptrtype = "cplex_prob") {
 
-    probP <- .Call("initProb", PACKAGE = "cplexAPI",
-                   env,
-                   as.character(pname)
-             )
+    prob <- .Call("initProb", PACKAGE = "cplexAPI",
+                  ptr(env),
+                  as.character(pname),
+                  as.character(ptrtype)
+            )
 
-    return(probP)
-
+    probP <- cplex_ProbPointer(prob)
+    
+    return(cplexError(probP))
 }
 
 
 #------------------------------------------------------------------------------#
 
-cloneProbCPLEX <- function(env, lp) {
-    return(.Call("cloneProb", env, lp, PACKAGE = "cplexAPI"))
+cloneProbCPLEX <- function(env, lp, ptrtype = "cplex_prob") {
+
+    clp <- .Call("cloneProb", PACKAGE = "cplexAPI",
+                 ptr(env),
+                 ptr(lp),
+                 as.character(ptrtype)
+           )
+
+    clpP <- cplex_ProbPointer(clp)
+    
+    return(cplexError(clpP))
 }
 
 
@@ -114,8 +137,8 @@ cloneProbCPLEX <- function(env, lp) {
 getProbTypeCPLEX <- function(env, lp) {
 
     ptype <- .Call("getProbType", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(ptype)
@@ -127,8 +150,8 @@ getProbTypeCPLEX <- function(env, lp) {
 chgProbTypeCPLEX <- function(env, lp, ptype) {
 
     status <- .Call("chgProbType", PACKAGE = "cplexAPI",
-                     env,
-                     lp,
+                     ptr(env),
+                     ptr(lp),
                      as.integer(ptype)
              )
 
@@ -141,7 +164,7 @@ chgProbTypeCPLEX <- function(env, lp, ptype) {
 getVersionCPLEX <- function(env) {
 
     version <- .Call("getVersion", PACKAGE = "cplexAPI",
-                     env
+                     ptr(env)
                )
 
     return(version)
@@ -151,11 +174,11 @@ getVersionCPLEX <- function(env) {
 
 #------------------------------------------------------------------------------#
 
-closeProbCPLEX <- function(env, lp) {
+closeProbCPLEX <- function(prob) {
 
     status    <- integer(2)
-    status[1] <- .Call("delProb", env, lp, PACKAGE = "cplexAPI")
-    status[2] <- .Call("closeEnv", env, PACKAGE = "cplexAPI")
+    status[1] <- delProbCPLEX(prob[["env"]], prob[["lp"]])
+    status[2] <- closeEnvCPLEX(prob[["env"]])
     return(status)
 
 }
@@ -163,14 +186,15 @@ closeProbCPLEX <- function(env, lp) {
 
 #------------------------------------------------------------------------------#
 
-openProbCPLEX <- function(pname = "CPLEX_PROB") {
+openProbCPLEX <- function(pname = "CPLEX_PROB",
+                          ptrtypeENV = "cplex_env",
+                          ptrtypePROB = "cplex_prob") {
 
-    en <- .Call("openEnv", PACKAGE = "cplexAPI")
+    en <- openEnvCPLEX(ptrtype = ptrtypeENV)
     if (!is(en, "cpxerr")) {
-        pr <- .Call("initProb", PACKAGE = "cplexAPI",
-                    en,
-                    as.character(pname)
-              )
+        pr <- initProbCPLEX(env = en,
+                            pname = pname,
+                            ptrtype = ptrtypePROB)
     }
     else {
         pr <- NULL
@@ -185,10 +209,10 @@ openProbCPLEX <- function(pname = "CPLEX_PROB") {
 setDefaultParmCPLEX <- function(env) {
 
     status <- .Call("setDefaultParm", PACKAGE = "cplexAPI",
-                    env
+                    ptr(env)
               )
-    return(status)
 
+    return(status)
 }
 
 
@@ -197,12 +221,12 @@ setDefaultParmCPLEX <- function(env) {
 setIntParmCPLEX <- function(env, parm, value) {
 
     status <- .Call("setIntParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(parm),
                     as.integer(value)
               )
-    return(status)
 
+    return(status)
 }
 
 
@@ -211,11 +235,11 @@ setIntParmCPLEX <- function(env, parm, value) {
 getIntParmCPLEX <- function(env, parm) {
 
     value <- .Call("getIntParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(value)
+    return(cplexError(value))
 }
 
 
@@ -224,11 +248,11 @@ getIntParmCPLEX <- function(env, parm) {
 getInfoIntParmCPLEX <- function(env, parm) {
 
     param <- .Call("getInfoIntParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(param)
+    return(cplexError(param))
 }
 
 #------------------------------------------------------------------------------#
@@ -236,12 +260,12 @@ getInfoIntParmCPLEX <- function(env, parm) {
 setDblParmCPLEX <- function(env, parm, value) {
 
     status <- .Call("setDblParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(parm),
                     as.numeric(value)
               )
-    return(status)
 
+    return(status)
 }
 
 
@@ -250,11 +274,11 @@ setDblParmCPLEX <- function(env, parm, value) {
 getDblParmCPLEX <- function(env, parm) {
 
     value <- .Call("getDblParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(value)
+    return(cplexError(value))
 }
 
 
@@ -263,11 +287,11 @@ getDblParmCPLEX <- function(env, parm) {
 getInfoDblParmCPLEX <- function(env, parm) {
 
     param <- .Call("getInfoDblParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
-    return(param)
+    return(cplexError(param))
 }
 
 
@@ -276,12 +300,12 @@ getInfoDblParmCPLEX <- function(env, parm) {
 setStrParmCPLEX <- function(env, parm, value) {
 
     status <- .Call("setStrParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(parm),
                     as.character(value)
               )
-    return(status)
 
+    return(status)
 }
 
 
@@ -290,7 +314,7 @@ setStrParmCPLEX <- function(env, parm, value) {
 getStrParmCPLEX <- function(env, parm) {
 
     value <- .Call("getStrParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
@@ -303,7 +327,7 @@ getStrParmCPLEX <- function(env, parm) {
 getInfoStrParmCPLEX <- function(env, parm) {
 
     param <- .Call("getInfoStrParm", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(parm)
              )
 
@@ -316,7 +340,7 @@ getInfoStrParmCPLEX <- function(env, parm) {
 getParmNameCPLEX <- function(env, wparm) {
 
     nparm <- .Call("getParmName", PACKAGE = "cplexAPI",
-                   env,
+                   ptr(env),
                    as.integer(wparm)
              )
 
@@ -329,7 +353,7 @@ getParmNameCPLEX <- function(env, wparm) {
 getParmNumCPLEX <- function(env, nparm) {
 
     numparm <- .Call("getParmNum", PACKAGE = "cplexAPI",
-                     env,
+                     ptr(env),
                      as.character(nparm)
                )
 
@@ -342,7 +366,7 @@ getParmNumCPLEX <- function(env, nparm) {
 readCopyParmCPLEX <- function(env, fname) {
 
     status <- .Call("readCopyParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.character(fname)
               )
 
@@ -355,7 +379,7 @@ readCopyParmCPLEX <- function(env, fname) {
 writeParmCPLEX <- function(env, fname) {
 
     status <- .Call("writeParm", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.character(fname)
               )
 
@@ -368,11 +392,11 @@ writeParmCPLEX <- function(env, fname) {
 getParmTypeCPLEX <- function(env, parm) {
 
     status <- .Call("getParmType", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     as.integer(parm)
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -381,10 +405,10 @@ getParmTypeCPLEX <- function(env, parm) {
 getChgParmCPLEX <- function(env) {
 
     status <- .Call("getChgParm", PACKAGE = "cplexAPI",
-                    env
+                    ptr(env)
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -394,8 +418,8 @@ setObjDirCPLEX <- function(env, lp, lpdir) {
 
     invisible(
         .Call("setObjDir", PACKAGE = "cplexAPI",
-              env,
-              lp,
+              ptr(env),
+              ptr(lp),
               as.integer(lpdir)
         )
     )
@@ -408,8 +432,8 @@ setObjDirCPLEX <- function(env, lp, lpdir) {
 getObjDirCPLEX <- function(env, lp) {
 
     lpdir <- .Call("getObjDir", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(lpdir)
@@ -430,8 +454,8 @@ copyLpCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs, sense,
     }
 
     status <- .Call("copyLp", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -479,8 +503,8 @@ copyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs, sense,
     }
 
     status <- .Call("copyLpwNames", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -504,6 +528,23 @@ copyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs, sense,
 
 #------------------------------------------------------------------------------#
 
+copyQuadCPLEX <- function(env, lp, qmatbeg, qmatcnt, qmatind, qmatval) {
+
+    status <- .Call("copyQuad", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(qmatbeg),
+                    as.integer(qmatcnt),
+                    as.integer(qmatind),
+                    as.numeric(qmatval)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
 writeProbCPLEX <- function(env, lp, fname, ftype = NULL) {
 
     if (is.null(ftype)) {
@@ -514,8 +555,8 @@ writeProbCPLEX <- function(env, lp, fname, ftype = NULL) {
     }
 
     status <- .Call("writeProb", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(fname),
                     Cftype
               )
@@ -536,8 +577,8 @@ readCopyProbCPLEX <- function(env, lp, fname, ftype = NULL) {
     }
 
     status <- .Call("readCopyProb", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(fname),
                     Cftype
               )
@@ -551,12 +592,12 @@ readCopyProbCPLEX <- function(env, lp, fname, ftype = NULL) {
 dualWriteCPLEX <- function(env, lp, fname) {
 
     status <- .Call("dualWrite", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(fname)
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -565,9 +606,9 @@ dualWriteCPLEX <- function(env, lp, fname) {
 presolveCPLEX <- function(env, lp, method) {
 
     preslv <- .Call("presolve", PACKAGE = "cplexAPI",
-                     env,
-                     lp,
-                     as.integer(method)
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(method)
                )
 
     return(preslv)
@@ -579,11 +620,11 @@ presolveCPLEX <- function(env, lp, method) {
 getPreStatCPLEX <- function(env, lp) {
 
     prestat <- .Call("getPreStat", PACKAGE = "cplexAPI",
-                      env,
-                      lp
+                     ptr(env),
+                     ptr(lp)
               )
 
-    return(prestat)
+    return(cplexError(prestat))
 }
 
 
@@ -592,11 +633,11 @@ getPreStatCPLEX <- function(env, lp) {
 basicPresolveCPLEX <- function(env, lp) {
 
     bpres <- .Call("basicPresolve", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                   ptr(env),
+                   ptr(lp)
               )
 
-    return(bpres)
+    return(cplexError(bpres))
 }
 
 
@@ -605,25 +646,26 @@ basicPresolveCPLEX <- function(env, lp) {
 preslvWriteCPLEX <- function(env, lp, fname) {
 
     off <- .Call("preslvWrite", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
-                  as.character(fname)
+                 ptr(env),
+                 ptr(lp),
+                 as.character(fname)
            )
 
-    return(off)
+    return(cplexError(off))
 }
 
 
 #------------------------------------------------------------------------------#
 
-getRedLpCPLEX <- function(env, lp) {
+getRedLpCPLEX <- function(env, lp, ptrtype = "cplex_prob") {
 
     redlp <- .Call("getRedLp", PACKAGE = "cplexAPI",
-                    env,
-                    lp
-           )
+                   ptr(env),
+                   ptr(lp),
+                   as.character(ptrtype)
+             )
 
-    return(redlp)
+    return(cplexError(redlp))
 }
 
 
@@ -632,11 +674,11 @@ getRedLpCPLEX <- function(env, lp) {
 getObjOffsetCPLEX <- function(env, lp) {
 
     ooff <- .Call("getObjOffset", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                  ptr(env),
+                  ptr(lp)
             )
 
-    return(ooff)
+    return(cplexError(ooff))
 }
 
 
@@ -645,8 +687,8 @@ getObjOffsetCPLEX <- function(env, lp) {
 unscaleProbCPLEX <- function(env, lp) {
 
     status <- .Call("unscaleProb", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -688,8 +730,8 @@ newRowsCPLEX <- function(env, lp,
     }
 
     status <- .Call("newRows", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nrows),
                     Crhs,
                     Csense,
@@ -736,8 +778,8 @@ addRowsCPLEX <- function(env, lp, ncols, nrows, nnz, matbeg, matind, matval,
     }
 
     status <- .Call("addRows", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(nrows),
                     as.integer(nnz),
@@ -759,8 +801,8 @@ addRowsCPLEX <- function(env, lp, ncols, nrows, nnz, matbeg, matind, matval,
 getNumRowsCPLEX <- function(env, lp) {
 
     nrows <- .Call("getNumRows", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(nrows)
@@ -772,8 +814,8 @@ getNumRowsCPLEX <- function(env, lp) {
 delRowsCPLEX <- function(env, lp, begin, end) {
 
     status <- .Call("delRows", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
               )
@@ -787,8 +829,8 @@ delRowsCPLEX <- function(env, lp, begin, end) {
 delSetRowsCPLEX <- function(env, lp, delstat) {
 
     indrows <- .Call("delSetRows", PACKAGE = "cplexAPI",
-                     env,
-                     lp,
+                     ptr(env),
+                     ptr(lp),
                      as.integer(delstat)
                )
 
@@ -838,8 +880,8 @@ newColsCPLEX <- function(env, lp, ncols,
     }
 
     status <- .Call("newCols", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     Cobj,
                     Clb,
@@ -879,8 +921,8 @@ addColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
     }
 
     status <- .Call("addCols", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(nnz),
                     as.numeric(objf),
@@ -901,8 +943,8 @@ addColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
 getNumColsCPLEX <- function(env, lp) {
 
     ncols <- .Call("getNumCols", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(ncols)
@@ -914,8 +956,8 @@ getNumColsCPLEX <- function(env, lp) {
 delColsCPLEX <- function(env, lp, begin, end) {
 
     status <- .Call("delCols", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
               )
@@ -929,8 +971,8 @@ delColsCPLEX <- function(env, lp, begin, end) {
 delSetColsCPLEX <- function(env, lp, delstat) {
 
     indcols <- .Call("delSetCols", PACKAGE = "cplexAPI",
-                     env,
-                     lp,
+                     ptr(env),
+                     ptr(lp),
                      as.integer(delstat)
                )
 
@@ -943,8 +985,8 @@ delSetColsCPLEX <- function(env, lp, delstat) {
 chgObjCPLEX <- function(env, lp, ncols, ind, val) {
 
     status <- .Call("chgObj", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(ind),
                     as.numeric(val)
@@ -959,13 +1001,13 @@ chgObjCPLEX <- function(env, lp, ncols, ind, val) {
 getObjCPLEX <- function(env, lp, begin, end) {
 
     obj_coef <- .Call("getObj", PACKAGE = "cplexAPI",
-                      env,
-                      lp,
+                      ptr(env),
+                      ptr(lp),
                       as.integer(begin),
                       as.integer(end)
                 )
 
-    return(obj_coef)
+    return(cplexError(obj_coef))
 }
 
 
@@ -974,8 +1016,8 @@ getObjCPLEX <- function(env, lp, begin, end) {
 copyObjNameCPLEX <- function(env, lp, oname) {
 
     status <- .Call("copyObjName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(oname)
               )
 
@@ -988,11 +1030,11 @@ copyObjNameCPLEX <- function(env, lp, oname) {
 getObjNameCPLEX <- function(env, lp) {
 
     objname <- .Call("getObjName", PACKAGE = "cplexAPI",
-                      env,
-                      lp
+                      ptr(env),
+                      ptr(lp)
                )
 
-    return(objname)
+    return(cplexError(objname))
 }
 
 
@@ -1001,8 +1043,8 @@ getObjNameCPLEX <- function(env, lp) {
 chgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 
     status <- .Call("chgCoefList", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nnz),
                     as.integer(ia),
                     as.integer(ja),
@@ -1015,11 +1057,27 @@ chgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 
 #------------------------------------------------------------------------------#
 
+chgQPcoefCPLEX <- function(env, lp, i, j, val) {
+
+    status <- .Call("chgQPcoef", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(i),
+                    as.integer(j),
+                    as.numeric(val)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
 chgCoefCPLEX <- function(env, lp, i, j, val) {
 
     status <- .Call("chgCoef", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(i),
                     as.integer(j),
                     as.numeric(val)
@@ -1034,13 +1092,13 @@ chgCoefCPLEX <- function(env, lp, i, j, val) {
 getCoefCPLEX <- function(env, lp, i, j) {
 
     co <- .Call("getCoef", PACKAGE = "cplexAPI",
-                 env,
-                 lp,
+                 ptr(env),
+                 ptr(lp),
                  as.integer(i),
                  as.integer(j)
               )
 
-    return(co)
+    return(cplexError(co))
 }
 
 
@@ -1049,8 +1107,8 @@ getCoefCPLEX <- function(env, lp, i, j) {
 getNumNnzCPLEX <- function(env, lp) {
 
     nnz <- .Call("getNumNnz", PACKAGE = "cplexAPI",
-                 env,
-                 lp
+                 ptr(env),
+                 ptr(lp)
            )
 
     return(nnz)
@@ -1062,8 +1120,8 @@ getNumNnzCPLEX <- function(env, lp) {
 chgBndsCPLEX <- function(env, lp, ncols, ind, lu, bd) {
 
     status <- .Call("chgBnds", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(ind),
                     as.character(paste(lu, collapse = "")),
@@ -1079,8 +1137,8 @@ chgBndsCPLEX <- function(env, lp, ncols, ind, lu, bd) {
 chgColsBndsCPLEX <- function(env, lp, j, lb, ub) {
 
     status <- .Call("chgColsBnds", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(j),
                     as.numeric(lb),
                     as.numeric(ub)
@@ -1095,8 +1153,8 @@ chgColsBndsCPLEX <- function(env, lp, j, lb, ub) {
 tightenBndsCPLEX <- function(env, lp, ncols, ind, lu, bd) {
 
     status <- .Call("tightenBnds", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(ind),
                     as.character(paste(lu, collapse = "")),
@@ -1112,14 +1170,14 @@ tightenBndsCPLEX <- function(env, lp, ncols, ind, lu, bd) {
 chgColTypeCPLEX <- function(env, lp, ncols, ind, xctype) {
 
     status <- .Call("chgColType", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncols),
                     as.integer(ind),
                     as.character(paste(xctype, collapse = ""))
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -1128,8 +1186,8 @@ chgColTypeCPLEX <- function(env, lp, ncols, ind, xctype) {
 getColTypeCPLEX <- function(env, lp, begin, end) {
 
     ctype <- .Call("getColType", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
               )
@@ -1150,8 +1208,8 @@ getColTypeCPLEX <- function(env, lp, begin, end) {
 copyColTypeCPLEX <- function(env, lp, xctype) {
 
     status <- .Call("copyColType", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(paste(xctype, collapse = ""))
               )
 
@@ -1164,13 +1222,13 @@ copyColTypeCPLEX <- function(env, lp, xctype) {
 getLowerBndsCPLEX <- function(env, lp, begin, end) {
 
     lb <- .Call("getLowerBnds", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(begin),
                 as.integer(end)
           )
 
-    return(lb)
+    return(cplexError(lb))
 }
 
 
@@ -1179,13 +1237,13 @@ getLowerBndsCPLEX <- function(env, lp, begin, end) {
 getUpperBndsCPLEX <- function(env, lp, begin, end) {
 
     ub <- .Call("getUpperBnds", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(begin),
                 as.integer(end)
           )
 
-    return(ub)
+    return(cplexError(ub))
 }
 
 
@@ -1196,13 +1254,13 @@ getLowBndsIdsCPLEX <- function(env, lp, ind) {
     ncols <- length(ind)
 
     lb <- .Call("getLowBndsIds", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(ind),
                 as.integer(ncols)
           )
 
-    return(lb)
+    return(cplexError(lb))
 }
 
 
@@ -1213,13 +1271,13 @@ getUppBndsIdsCPLEX <- function(env, lp, ind) {
     ncols <- length(ind)
 
     ub <- .Call("getUppBndsIds", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(ind),
                 as.integer(ncols)
           )
 
-    return(ub)
+    return(cplexError(ub))
 }
 
 
@@ -1228,8 +1286,8 @@ getUppBndsIdsCPLEX <- function(env, lp, ind) {
 chgRhsCPLEX <- function(env, lp, nrows, ind, val) {
 
     status <- .Call("chgRhs", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nrows),
                     as.integer(ind),
                     as.numeric(val)
@@ -1244,13 +1302,13 @@ chgRhsCPLEX <- function(env, lp, nrows, ind, val) {
 getRhsCPLEX <- function(env, lp, begin, end) {
 
     status <- .Call("getRhs", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -1259,8 +1317,8 @@ getRhsCPLEX <- function(env, lp, begin, end) {
 chgSenseCPLEX <- function(env, lp, nrows, ind, sense) {
 
     status <- .Call("chgSense", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nrows),
                     as.integer(ind),
                     as.character(paste(sense, collapse = ""))
@@ -1275,8 +1333,8 @@ chgSenseCPLEX <- function(env, lp, nrows, ind, sense) {
 getSenseCPLEX <- function(env, lp, begin, end) {
 
     sense <- .Call("getSense", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
               )
@@ -1288,7 +1346,7 @@ getSenseCPLEX <- function(env, lp, begin, end) {
         out <- unlist(strsplit(sense, NULL))
     }
 
-    return(out)
+    return(cplexError(out))
 }
 
 
@@ -1297,8 +1355,8 @@ getSenseCPLEX <- function(env, lp, begin, end) {
 delNamesCPLEX <- function(env, lp) {
 
     status <- .Call("delNames", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1310,8 +1368,8 @@ delNamesCPLEX <- function(env, lp) {
 chgProbNameCPLEX <- function(env, lp, probname) {
 
     status <- .Call("chgProbName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(probname)
               )
 
@@ -1324,11 +1382,11 @@ chgProbNameCPLEX <- function(env, lp, probname) {
 getProbNameCPLEX <- function(env, lp) {
 
     probname <- .Call("getProbName", PACKAGE = "cplexAPI",
-                      env,
-                      lp
+                      ptr(env),
+                      ptr(lp)
                 )
 
-    return(probname)
+    return(cplexError(probname))
 }
 
 
@@ -1337,8 +1395,8 @@ getProbNameCPLEX <- function(env, lp) {
 chgNameCPLEX <- function(env, lp, key, ij, name) {
 
     status <- .Call("chgName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(key),
                     as.integer(ij),
                     as.character(name)
@@ -1353,8 +1411,8 @@ chgNameCPLEX <- function(env, lp, key, ij, name) {
 chgRowNameCPLEX <- function(env, lp, nnames, ind, names) {
 
     status <- .Call("chgRowName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nnames),
                     as.integer(ind),
                     as.character(names)
@@ -1369,8 +1427,8 @@ chgRowNameCPLEX <- function(env, lp, nnames, ind, names) {
 chgColNameCPLEX <- function(env, lp, nnames, ind, names) {
 
     status <- .Call("chgColName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nnames),
                     as.integer(ind),
                     as.character(names)
@@ -1385,13 +1443,13 @@ chgColNameCPLEX <- function(env, lp, nnames, ind, names) {
 getRowNameCPLEX <- function(env, lp, begin, end) {
 
     rname <- .Call("getRowName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
              )
 
-    return(rname)
+    return(cplexError(rname))
 }
 
 
@@ -1400,13 +1458,13 @@ getRowNameCPLEX <- function(env, lp, begin, end) {
 getColNameCPLEX <- function(env, lp, begin, end) {
 
     cname <- .Call("getColName", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
              )
 
-    return(cname)
+    return(cplexError(cname))
 }
 
 
@@ -1415,12 +1473,12 @@ getColNameCPLEX <- function(env, lp, begin, end) {
 getColIndexCPLEX <- function(env, lp, cname) {
 
     cindex <- .Call("getColIndex", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(cname)
              )
 
-    return(cindex)
+    return(cplexError(cindex))
 }
 
 
@@ -1429,12 +1487,12 @@ getColIndexCPLEX <- function(env, lp, cname) {
 getRowIndexCPLEX <- function(env, lp, rname) {
 
     rindex <- .Call("getRowIndex", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.character(rname)
              )
 
-    return(rindex)
+    return(cplexError(rindex))
 }
 
 
@@ -1443,8 +1501,8 @@ getRowIndexCPLEX <- function(env, lp, rname) {
 chgRngValCPLEX <- function(env, lp, nrows, ind, val) {
 
     status <- .Call("chgRngVal", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nrows),
                     as.integer(ind),
                     as.numeric(val)
@@ -1459,13 +1517,13 @@ chgRngValCPLEX <- function(env, lp, nrows, ind, val) {
 getRngValCPLEX <- function(env, lp, begin, end) {
 
     rngval <- .Call("getRngVal", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(begin),
                     as.integer(end)
               )
 
-    return(rngval)
+    return(cplexError(rngval))
 }
 
 
@@ -1474,13 +1532,13 @@ getRngValCPLEX <- function(env, lp, begin, end) {
 getRowsCPLEX <- function(env, lp, begin, end) {
 
     rows <- .Call("getRows", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
             )
 
-    return(rows)
+    return(cplexError(rows))
 }
 
 
@@ -1489,13 +1547,13 @@ getRowsCPLEX <- function(env, lp, begin, end) {
 getColsCPLEX <- function(env, lp, begin, end) {
 
     cols <- .Call("getCols", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
             )
 
-    return(cols)
+    return(cplexError(cols))
 }
 
 
@@ -1504,8 +1562,8 @@ getColsCPLEX <- function(env, lp, begin, end) {
 completelpCPLEX <- function(env, lp) {
 
     status <- .Call("completelp", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1517,8 +1575,8 @@ completelpCPLEX <- function(env, lp) {
 cleanupCoefCPLEX <- function(env, lp, eps) {
 
     status <- .Call("cleanupCoef", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.numeric(eps)
               )
 
@@ -1576,8 +1634,8 @@ copyStartCPLEX <- function(env, lp,
     }
 
     status <- .Call("copyStart", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     Ccstat, Crstat,
                     Ccprim, Crprim,
                     Ccdual, Crdual
@@ -1592,8 +1650,8 @@ copyStartCPLEX <- function(env, lp,
 copyBaseCPLEX <- function(env, lp, cstat, rstat) {
 
     status <- .Call("copyBase", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(cstat),
                     as.integer(rstat)
               )
@@ -1608,8 +1666,8 @@ copyPartBaseCPLEX <- function(env, lp, ncind, cind, cstat,
                                        nrind, rind, rstat) {
 
     status <- .Call("copyPartBase", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(ncind),
                     as.integer(cind),
                     as.integer(cstat),
@@ -1627,11 +1685,11 @@ copyPartBaseCPLEX <- function(env, lp, ncind, cind, cstat,
 getBaseCPLEX <- function(env, lp) {
 
     base <- .Call("getBase", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                  ptr(env),
+                  ptr(lp)
               )
 
-    return(base)
+    return(cplexError(base))
 }
 
 
@@ -1640,10 +1698,10 @@ getBaseCPLEX <- function(env, lp) {
 baseWriteCPLEX <- function(env, lp, fname) {
 
     status <- .Call("baseWrite", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
-                  as.character(fname)
-            )
+                    ptr(env),
+                    ptr(lp),
+                    as.character(fname)
+              )
 
     return(status)
 }
@@ -1654,8 +1712,8 @@ baseWriteCPLEX <- function(env, lp, fname) {
 readCopyBaseCPLEX <- function(env, lp, fname) {
 
     status <- .Call("readCopyBase", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
+                  ptr(env),
+                  ptr(lp),
                   as.character(fname)
             )
 
@@ -1668,8 +1726,8 @@ readCopyBaseCPLEX <- function(env, lp, fname) {
 lpoptCPLEX <- function(env, lp) {
 
     status <- .Call("lpopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1681,8 +1739,8 @@ lpoptCPLEX <- function(env, lp) {
 primoptCPLEX <- function(env, lp) {
 
     status <- .Call("primopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1694,8 +1752,8 @@ primoptCPLEX <- function(env, lp) {
 dualoptCPLEX <- function(env, lp) {
 
     status <- .Call("dualopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1707,8 +1765,8 @@ dualoptCPLEX <- function(env, lp) {
 baroptCPLEX <- function(env, lp) {
 
     status <- .Call("baropt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1720,8 +1778,8 @@ baroptCPLEX <- function(env, lp) {
 hybbaroptCPLEX <- function(env, lp, method) {
 
     status <- .Call("hybbaropt", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(method)
               )
 
@@ -1734,8 +1792,8 @@ hybbaroptCPLEX <- function(env, lp, method) {
 hybnetoptCPLEX <- function(env, lp, method) {
 
     status <- .Call("hybnetopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(method)
               )
 
@@ -1748,8 +1806,8 @@ hybnetoptCPLEX <- function(env, lp, method) {
 siftoptCPLEX <- function(env, lp) {
 
     status <- .Call("siftopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1761,8 +1819,21 @@ siftoptCPLEX <- function(env, lp) {
 mipoptCPLEX <- function(env, lp) {
 
     status <- .Call("mipopt", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+qpoptCPLEX <- function(env, lp) {
+
+    status <- .Call("qpopt", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -1774,11 +1845,11 @@ mipoptCPLEX <- function(env, lp) {
 getCutoffCPLEX <- function(env, lp) {
 
     coff <- .Call("getCutoff", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
             )
 
-    return(coff)
+    return(cplexError(coff))
 }
 
 
@@ -1787,12 +1858,12 @@ getCutoffCPLEX <- function(env, lp) {
 getGradCPLEX <- function(env, lp, j) {
 
     grad <- .Call("getGrad", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(j)
             )
 
-    return(grad)
+    return(cplexError(grad))
 }
 
 
@@ -1801,8 +1872,8 @@ getGradCPLEX <- function(env, lp, j) {
 getItCntCPLEX <- function(env, lp) {
 
     itcnt <- .Call("getItCnt", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(itcnt)
@@ -1814,8 +1885,8 @@ getItCntCPLEX <- function(env, lp) {
 getPhase1CntCPLEX <- function(env, lp) {
 
     pcnt <- .Call("getPhase1Cnt", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                  ptr(env),
+                  ptr(lp)
             )
 
     return(pcnt)
@@ -1828,8 +1899,8 @@ getPhase1CntCPLEX <- function(env, lp) {
 getSiftItCntCPLEX <- function(env, lp) {
 
     scnt <- .Call("getSiftItCnt", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                  ptr(env),
+                  ptr(lp)
             )
 
     return(scnt)
@@ -1841,8 +1912,8 @@ getSiftItCntCPLEX <- function(env, lp) {
 getSiftPase1CntCPLEX <- function(env, lp) {
 
     spcnt <- .Call("getSiftPase1Cnt", PACKAGE = "cplexAPI",
-                   env,
-                   lp
+                   ptr(env),
+                   ptr(lp)
              )
 
     return(spcnt)
@@ -1854,8 +1925,8 @@ getSiftPase1CntCPLEX <- function(env, lp) {
 getDbsCntCPLEX <- function(env, lp) {
 
     dcnt <- .Call("getDbsCnt", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                  ptr(env),
+                  ptr(lp)
             )
 
     return(dcnt)
@@ -1907,8 +1978,8 @@ feasOptCPLEX <- function(env, lp,
                          rhs = FALSE, rng = FALSE, lb = FALSE, ub = FALSE) {
 
     status <- .Call("feasOpt", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.logical(rhs),
                     as.logical(rng),
                     as.logical(lb),
@@ -1931,14 +2002,14 @@ getColInfeasCPLEX <- function(env, lp, begin, end, sol = NULL) {
     }
 
     colinfeas <- .Call("getColInfeas", PACKAGE = "cplexAPI",
-                       env,
-                       lp,
+                       ptr(env),
+                       ptr(lp),
                        Csol,
                        as.integer(begin),
                        as.integer(end)
                  )
 
-    return(colinfeas)
+    return(cplexError(colinfeas))
 }
 
 
@@ -1954,14 +2025,14 @@ getRowInfeasCPLEX <- function(env, lp, begin, end, sol = NULL) {
     }
 
     rowinfeas <- .Call("getRowInfeas", PACKAGE = "cplexAPI",
-                       env,
-                       lp,
+                       ptr(env),
+                       ptr(lp),
                        Csol,
                        as.integer(begin),
                        as.integer(end)
                  )
 
-    return(rowinfeas)
+    return(cplexError(rowinfeas))
 }
 
 
@@ -1970,11 +2041,31 @@ getRowInfeasCPLEX <- function(env, lp, begin, end, sol = NULL) {
 refineConflictCPLEX <- function(env, lp) {
 
     rcconf <- .Call("refineConflict", PACKAGE = "cplexAPI",
-                     env,
-                     lp
+                     ptr(env),
+                     ptr(lp)
               )
 
-    return(rcconf)
+    return(cplexError(rcconf))
+}
+
+
+#------------------------------------------------------------------------------#
+
+refineConflictExtCPLEX <- function(env, lp, grpcnt, concnt,
+                                   grppref, grpbeg, grpind, grptype) {
+
+    status <- .Call("refineConflictExt", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(grpcnt),
+                    as.integer(concnt),
+                    as.numeric(grppref),
+                    as.integer(grpbeg),
+                    as.integer(grpind),
+                    as.character(paste(grptype, collapse = ""))
+              )
+
+    return(status)
 }
 
 
@@ -1983,8 +2074,8 @@ refineConflictCPLEX <- function(env, lp) {
 getConflictCPLEX <- function(env, lp) {
 
     confl <- .Call("getConflict", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
              )
 
 #     if ( (is(confl, "cpxerr")) || (is.null(confl)) ) {
@@ -2000,7 +2091,22 @@ getConflictCPLEX <- function(env, lp) {
 #
 #     return(trimconfl)
 
-    return(confl)
+    return(cplexError(confl))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getConflictExtCPLEX <- function(env, lp, begin, end) {
+
+    confle <- .Call("getConflictExt", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(begin),
+                    as.integer(end)
+             )
+
+    return(cplexError(confle))
 }
 
 
@@ -2009,9 +2115,9 @@ getConflictCPLEX <- function(env, lp) {
 cLpWriteCPLEX <- function(env, lp, fname) {
 
     status <- .Call("cLpWrite", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
-                  as.character(fname)
+                    ptr(env),
+                    ptr(lp),
+                    as.character(fname)
               )
 
     return(status)
@@ -2023,8 +2129,8 @@ cLpWriteCPLEX <- function(env, lp, fname) {
 freePresolveCPLEX <- function(env, lp) {
 
     status <- .Call("freePresolve", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(status)
@@ -2036,8 +2142,8 @@ freePresolveCPLEX <- function(env, lp) {
 getMethodCPLEX <- function(env, lp) {
 
     method <- .Call("getMethod", PACKAGE = "cplexAPI",
-                    env,
-                    lp
+                    ptr(env),
+                    ptr(lp)
               )
 
     return(method)
@@ -2049,8 +2155,8 @@ getMethodCPLEX <- function(env, lp) {
 getSubMethodCPLEX <- function(env, lp) {
 
     submethod <- .Call("getSubMethod", PACKAGE = "cplexAPI",
-                        env,
-                        lp
+                        ptr(env),
+                        ptr(lp)
               )
 
     return(submethod)
@@ -2062,12 +2168,12 @@ getSubMethodCPLEX <- function(env, lp) {
 getDblQualCPLEX <- function(env, lp, w) {
 
     dqual <- .Call("getDblQual", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(w)
              )
 
-    return(dqual)
+    return(cplexError(dqual))
 }
 
 
@@ -2076,12 +2182,12 @@ getDblQualCPLEX <- function(env, lp, w) {
 getIntQualCPLEX <- function(env, lp, w) {
 
     iqual <- .Call("getIntQual", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(w)
               )
 
-    return(iqual)
+    return(cplexError(iqual))
 }
 
 
@@ -2090,11 +2196,11 @@ getIntQualCPLEX <- function(env, lp, w) {
 solnInfoCPLEX <- function(env, lp) {
 
     solinf <- .Call("solnInfo", PACKAGE = "cplexAPI",
-                     env,
-                     lp
+                     ptr(env),
+                     ptr(lp)
               )
 
-    return(solinf)
+    return(cplexError(solinf))
 }
 
 
@@ -2103,11 +2209,11 @@ solnInfoCPLEX <- function(env, lp) {
 solutionCPLEX <- function(env, lp) {
 
     sol <- .Call("solution", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                  ptr(env),
+                  ptr(lp)
             )
 
-    return(sol)
+    return(cplexError(sol))
 }
 
 
@@ -2116,8 +2222,8 @@ solutionCPLEX <- function(env, lp) {
 solWriteCPLEX <- function(env, lp, fname) {
 
     status <- .Call("solWrite", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
+                  ptr(env),
+                  ptr(lp),
                   as.character(fname)
             )
 
@@ -2130,9 +2236,9 @@ solWriteCPLEX <- function(env, lp, fname) {
 readCopySolCPLEX <- function(env, lp, fname) {
 
     status <- .Call("readCopySol", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
-                  as.character(fname)
+                    ptr(env),
+                    ptr(lp),
+                    as.character(fname)
             )
 
     return(status)
@@ -2144,8 +2250,8 @@ readCopySolCPLEX <- function(env, lp, fname) {
 getStatCPLEX <- function(env, lp) {
 
     stat <- .Call("getStat", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                  ptr(env),
+                  ptr(lp)
             )
 
     return(stat)
@@ -2157,8 +2263,8 @@ getStatCPLEX <- function(env, lp) {
 getSubStatCPLEX <- function(env, lp) {
 
     substat <- .Call("getSubStat", PACKAGE = "cplexAPI",
-                      env,
-                      lp
+                      ptr(env),
+                      ptr(lp)
             )
 
     return(substat)
@@ -2170,11 +2276,11 @@ getSubStatCPLEX <- function(env, lp) {
 getObjValCPLEX <- function(env, lp) {
 
     obj <- .Call("getObjVal", PACKAGE = "cplexAPI",
-                  env,
-                  lp
+                 ptr(env),
+                 ptr(lp)
             )
 
-    return(obj)
+    return(cplexError(obj))
 }
 
 
@@ -2183,13 +2289,13 @@ getObjValCPLEX <- function(env, lp) {
 getProbVarCPLEX <- function(env, lp, begin, end) {
 
     xval <- .Call("getProbVar", PACKAGE = "cplexAPI",
-                  env,
-                  lp,
+                  ptr(env),
+                  ptr(lp),
                   as.integer(begin),
                   as.integer(end)
             )
 
-    return(xval)
+    return(cplexError(xval))
 }
 
 
@@ -2198,13 +2304,13 @@ getProbVarCPLEX <- function(env, lp, begin, end) {
 getSlackCPLEX <- function(env, lp, begin, end) {
 
     slack <- .Call("getSlack", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
              )
 
-    return(slack)
+    return(cplexError(slack))
 }
 
 
@@ -2213,13 +2319,13 @@ getSlackCPLEX <- function(env, lp, begin, end) {
 getPiCPLEX <- function(env, lp, begin, end) {
 
     pi <- .Call("getPi", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(begin),
                 as.integer(end)
           )
 
-    return(pi)
+    return(cplexError(pi))
 }
 
 
@@ -2228,13 +2334,13 @@ getPiCPLEX <- function(env, lp, begin, end) {
 getDjCPLEX <- function(env, lp, begin, end) {
 
     dj <- .Call("getDj", PACKAGE = "cplexAPI",
-                env,
-                lp,
+                ptr(env),
+                ptr(lp),
                 as.integer(begin),
                 as.integer(end)
           )
 
-    return(dj)
+    return(cplexError(dj))
 }
 
 
@@ -2243,13 +2349,13 @@ getDjCPLEX <- function(env, lp, begin, end) {
 boundSaCPLEX <- function(env, lp, begin, end) {
 
     bndsa <- .Call("boundSa", PACKAGE = "cplexAPI",
-                   env,
-                   lp,
+                   ptr(env),
+                   ptr(lp),
                    as.integer(begin),
                    as.integer(end)
              )
 
-    return(bndsa)
+    return(cplexError(bndsa))
 }
 
 
@@ -2258,13 +2364,13 @@ boundSaCPLEX <- function(env, lp, begin, end) {
 objSaCPLEX <- function(env, lp, begin, end) {
 
     osa <- .Call("objSa", PACKAGE = "cplexAPI",
-                 env,
-                 lp,
+                 ptr(env),
+                 ptr(lp),
                  as.integer(begin),
                  as.integer(end)
            )
 
-    return(osa)
+    return(cplexError(osa))
 }
 
 
@@ -2273,26 +2379,29 @@ objSaCPLEX <- function(env, lp, begin, end) {
 rhsSaCPLEX <- function(env, lp, begin, end) {
 
     rsa <- .Call("rhsSa", PACKAGE = "cplexAPI",
-                 env,
-                 lp,
+                 ptr(env),
+                 ptr(lp),
                  as.integer(begin),
                  as.integer(end)
            )
 
-    return(rsa)
+    return(cplexError(rsa))
 }
 
 
 #------------------------------------------------------------------------------#
 
-openFileCPLEX <- function(fname, ftype = "w") {
+openFileCPLEX <- function(fname, ftype = "w", ptrtype = "cplex_file") {
 
     cpfile <- .Call("cplexfopen", PACKAGE = "cplexAPI",
                     as.character(fname),
-                    as.character(ftype)
+                    as.character(ftype),
+                    as.character(ptrtype)
               )
 
-    return(cpfile)
+    cpfileP <- cplex_FilePointer(cpfile)
+    
+    return(cpfileP)
 }
 
 
@@ -2301,10 +2410,10 @@ openFileCPLEX <- function(fname, ftype = "w") {
 closeFileCPLEX <- function(cpfile) {
 
     status <- .Call("cplexfclose", PACKAGE = "cplexAPI",
-                    cpfile
+                    ptr(cpfile)
               )
 
-    return(status)
+    return(cplexError(status))
 }
 
 
@@ -2313,7 +2422,7 @@ closeFileCPLEX <- function(cpfile) {
 fileputCPLEX <- function(cpfile, stuff = "") {
 
     status <- .Call("fileput", PACKAGE = "cplexAPI",
-                    cpfile,
+                    ptr(cpfile),
                     as.character(stuff)
               )
 
@@ -2329,11 +2438,11 @@ setLogFileCPLEX <- function(env, cpfile = NULL) {
         Ccpfile <- as.null(cpfile)
     }
     else {
-        Ccpfile <- cpfile
+        Ccpfile <- ptr(cpfile)
     }
 
     status <- .Call("setLogFile", PACKAGE = "cplexAPI",
-                    env,
+                    ptr(env),
                     Ccpfile
               )
 
@@ -2343,22 +2452,35 @@ setLogFileCPLEX <- function(env, cpfile = NULL) {
 
 #------------------------------------------------------------------------------#
 
-getLogFileCPLEX <- function(env) {
+getLogFileCPLEX <- function(env, ptrtype = "cplex_file") {
 
-    return(.Call("getLogFile", PACKAGE = "cplexAPI", env))
+    cpfile <- .Call("getLogFile", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    as.character(ptrtype)
+              )
+    
+    cpfileP <- cplex_FilePointer(cpfile)
+
+    return(cplexError(cpfileP))
 
 }
 
 
 #------------------------------------------------------------------------------#
 
-getChannelsCPLEX <- function(env) {
+getChannelsCPLEX <- function(env, ptrtype = "cplex_chan") {
 
     channels <- .Call("getChannels", PACKAGE = "cplexAPI",
-                      env
+                      ptr(env),
+                      as.character(ptrtype)
                 )
 
-    return(channels)
+    chanNames <- c("cpxresults", "cpxwarning", "cpxerror", "cpxlog")
+    chanP <- mapply(cplex_ChannelPointer,
+                    chname = chanNames,
+                    MoreArgs = list(pointer = channels))
+
+    return(cplexError(chanP))
 }
 
 
@@ -2367,7 +2489,7 @@ getChannelsCPLEX <- function(env) {
 flushStdChannelsCPLEX <- function(env) {
 
     status <- .Call("flushStdChannels", PACKAGE = "cplexAPI",
-                    env
+                    ptr(env)
               )
 
     return(status)
@@ -2376,13 +2498,16 @@ flushStdChannelsCPLEX <- function(env) {
 
 #------------------------------------------------------------------------------#
 
-addChannelCPLEX <- function(env) {
+addChannelCPLEX <- function(env, ptrtype = "cplex_chan") {
 
     newch <- .Call("addChannel", PACKAGE = "cplexAPI",
-                   env
+                   ptr(env),
+                   as.character(ptrtype)
               )
 
-    return(newch)
+    newchP <- cplex_ChannelPointer(newch)
+
+    return(newchP)
 }
 
 
@@ -2392,8 +2517,8 @@ delChannelCPLEX <- function(env, newch) {
 
     invisible(
         .Call("delChannel", PACKAGE = "cplexAPI",
-              env,
-              newch
+              ptr(env),
+              ptr(newch)
         )
     )
 
@@ -2406,8 +2531,8 @@ disconnectChannelCPLEX <- function(env, newch) {
 
     invisible(
         .Call("disconnectChannel", PACKAGE = "cplexAPI",
-              env,
-              newch
+              ptr(env),
+              ptr(newch)
         )
     )
 
@@ -2420,8 +2545,8 @@ flushChannelCPLEX <- function(env, newch) {
 
     invisible(
         .Call("flushChannel", PACKAGE = "cplexAPI",
-              env,
-              newch
+              ptr(env),
+              ptr(newch)
         )
     )
 
@@ -2433,9 +2558,9 @@ flushChannelCPLEX <- function(env, newch) {
 addFpDestCPLEX <- function(env, newch, cpfile) {
 
     status <- .Call("addFpDest", PACKAGE = "cplexAPI",
-                      env,
-                      newch,
-                      cpfile
+                    ptr(env),
+                    ptr(newch),
+                    ptr(cpfile)
               )
 
     return(status)
@@ -2447,9 +2572,9 @@ addFpDestCPLEX <- function(env, newch, cpfile) {
 delFpDestCPLEX <- function(env, newch, cpfile) {
 
     status <- .Call("delFpDest", PACKAGE = "cplexAPI",
-                      env,
-                      newch,
-                      cpfile
+                    ptr(env),
+                    ptr(newch),
+                    ptr(cpfile)
               )
 
     return(status)
@@ -2461,10 +2586,10 @@ delFpDestCPLEX <- function(env, newch, cpfile) {
 getTimeCPLEX <- function(env) {
 
     timest <- .Call("getTime", PACKAGE = "cplexAPI",
-                     env
+                    ptr(env)
               )
 
-    return(timest)
+    return(cplexError(timest))
 }
 
 
@@ -2518,8 +2643,8 @@ tuneParmCPLEX <- function(env, lp,
     }
 
     tstat <- .Call("tuneParam", PACKAGE = "cplexAPI",
-                    env,
-                    lp,
+                    ptr(env),
+                    ptr(lp),
                     as.integer(nIntP),
                     CintP, CintPv,
                     as.integer(nDblP),
@@ -2528,16 +2653,22 @@ tuneParmCPLEX <- function(env, lp,
                     CstrP, CstrPv
               )
 
-    return(tstat)
+    return(cplexError(tstat))
 }
 
 
 #------------------------------------------------------------------------------#
 
-setTerminateCPLEX <- function(env) {
+setTerminateCPLEX <- function(env, ptrtype = "cplex_term") {
 
-    return(.Call("setTerminate", env, PACKAGE = "cplexAPI"))
+    term <- .Call("setTerminate", PACKAGE = "cplexAPI",
+                  ptr(env),
+                  as.character(ptrtype)
+            )
 
+    termP <- cplex_TermPointer(term)
+    
+    return(cplexError(termP))
 }
 
 
@@ -2546,7 +2677,8 @@ setTerminateCPLEX <- function(env) {
 delTerminateCPLEX <- function(env, tsig) {
 
     status <- .Call("delTerminate", PACKAGE = "cplexAPI",
-                  env, tsig
+                    ptr(env),
+                    ptr(tsig)
               )
 
     return(status)
@@ -2559,8 +2691,8 @@ delTerminateCPLEX <- function(env, tsig) {
 chgTerminateCPLEX <- function(env, tval = 1) {
     invisible(
         .Call("chgTerminate", PACKAGE = "cplexAPI",
-               env,
-               as.integer(tval)
+              ptr(env),
+              as.integer(tval)
         )
     )
 }
@@ -2570,7 +2702,249 @@ chgTerminateCPLEX <- function(env, tval = 1) {
 
 printTerminateCPLEX <- function(env) {
 
-    invisible(.Call("printTerminate", env, PACKAGE = "cplexAPI"))
+    invisible(.Call("printTerminate", ptr(env), PACKAGE = "cplexAPI"))
 
 }
 
+
+#------------------------------------------------------------------------------#
+
+addMIPstartsCPLEX <- function(env, lp, mcnt, nzcnt, beg, varindices,
+                              values, effortlevel, mipstartname = NULL) {
+
+    if (is.null(mipstartname)) {
+        Cmipstartname <- as.null(mipstartname)
+    }
+    else {
+        Cmipstartname <- as.character(mipstartname)
+    }
+
+    status <- .Call("addMIPstarts", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(mcnt),
+                    as.integer(nzcnt),
+                    as.integer(beg),
+                    as.integer(varindices),
+                    as.numeric(values),
+                    as.integer(effortlevel),
+                    Cmipstartname
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+chgMIPstartsCPLEX <- function(env, lp, mcnt, mipstartindices, nzcnt,
+                              beg, varindices, values, effortlevel) {
+
+    status <- .Call("chgMIPstarts", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(mcnt),
+                    as.integer(mipstartindices),
+                    as.integer(nzcnt),
+                    as.integer(beg),
+                    as.integer(varindices),
+                    as.numeric(values),
+                    as.integer(effortlevel)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getMIPstartsCPLEX <- function(env, lp, begin, end) {
+
+    mips <- .Call("getMIPstarts", PACKAGE = "cplexAPI",
+                  ptr(env),
+                  ptr(lp),
+                  as.integer(begin),
+                  as.integer(end)
+            )
+
+    return(cplexError(mips))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getNumMIPstartsCPLEX <- function(env, lp) {
+
+    nmips <- .Call("getNumMIPstarts", PACKAGE = "cplexAPI",
+                  ptr(env),
+                  ptr(lp)
+            )
+
+    return(nmips)
+}
+
+
+#------------------------------------------------------------------------------#
+
+delMIPstartsCPLEX <- function(env, lp, begin, end) {
+
+    status <- .Call("delMIPstarts", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(begin),
+                    as.integer(end)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+writeMIPstartsCPLEX <- function(env, lp, fname, begin, end) {
+
+    status <- .Call("writeMIPstarts", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.character(fname),
+                    as.integer(begin),
+                    as.integer(end)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+readCopyMIPstartsCPLEX <- function(env, lp, fname) {
+
+    status <- .Call("readCopyMIPstarts", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.character(fname)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getMIPstartNameCPLEX <- function(env, lp, begin, end) {
+
+    rname <- .Call("getMIPstartName", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(begin),
+                    as.integer(end)
+             )
+
+    return(cplexError(rname))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getMIPstartIndexCPLEX <- function(env, lp, iname) {
+
+    rindex <- .Call("getMIPstartIndex", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.character(iname)
+             )
+
+    return(cplexError(rindex))
+}
+
+
+#------------------------------------------------------------------------------#
+
+refineMIPstartConflictCPLEX <- function(env, lp, mipstartindex) {
+
+    rcconf <- .Call("refineMIPstartConflict", PACKAGE = "cplexAPI",
+                     ptr(env),
+                     ptr(lp),
+                     as.integer(mipstartindex)
+              )
+
+    return(cplexError(rcconf))
+}
+
+
+#------------------------------------------------------------------------------#
+
+refineMIPstartConflictExtCPLEX <- function(env, lp, mipstartindex, grpcnt,
+                                           concnt, grppref, grpbeg, grpind,
+                                           grptype) {
+
+    status <- .Call("refineMIPstartConflictExt", PACKAGE = "cplexAPI",
+                    ptr(env),
+                    ptr(lp),
+                    as.integer(mipstartindex),
+                    as.integer(grpcnt),
+                    as.integer(concnt),
+                    as.numeric(grppref),
+                    as.integer(grpbeg),
+                    as.integer(grpind),
+                    as.character(paste(grptype, collapse = ""))
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getNumQPnzCPLEX <- function(env, lp) {
+
+    nnz <- .Call("getNumQPnz", PACKAGE = "cplexAPI",
+                 ptr(env),
+                 ptr(lp)
+            )
+
+    return(nnz)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getNumQuadCPLEX <- function(env, lp) {
+
+    nq <- .Call("getNumQuad", PACKAGE = "cplexAPI",
+                ptr(env),
+                ptr(lp)
+          )
+
+    return(nq)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getQPcoefCPLEX <- function(env, lp, i, j) {
+
+    qcoef <- .Call("getQPcoef", PACKAGE = "cplexAPI",
+                   ptr(env),
+                   ptr(lp),
+                   as.integer(i),
+                   as.integer(j)
+             )
+
+    return(cplexError(qcoef))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getQuadCPLEX <- function(env, lp, begin, end) {
+
+    cols <- .Call("getQuad", PACKAGE = "cplexAPI",
+                   ptr(env),
+                   ptr(lp),
+                   as.integer(begin),
+                   as.integer(end)
+            )
+
+    return(cplexError(cols))
+}
