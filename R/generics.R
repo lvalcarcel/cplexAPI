@@ -30,6 +30,9 @@
 #                                   generics                                   #
 #------------------------------------------------------------------------------#
 
+setGeneric("summary")
+
+
 setGeneric(name = "err",
            def  = function(object) { standardGeneric("err") }
 )
@@ -45,15 +48,15 @@ setGeneric(name = "errnum<-",
            def  = function(object, value) { standardGeneric("errnum<-") }
 )
 
-setGeneric(name = "ptr",
-           def  = function(object) { standardGeneric("ptr") }
+setGeneric(name = "cplexPointer",
+           def  = function(object) { standardGeneric("cplexPointer") }
 )
 
-setGeneric(name = "pType",
-           def  = function(object) { standardGeneric("pType") }
+setGeneric(name = "cplexPtrType",
+           def  = function(object) { standardGeneric("cplexPtrType") }
 )
-setGeneric(name = "pType<-",
-           def  = function(object, value) { standardGeneric("pType<-") }
+setGeneric(name = "cplexPtrType<-",
+           def  = function(object, value) { standardGeneric("cplexPtrType<-") }
 )
 
 setGeneric(name = "isCPLEXprobPointer",
@@ -76,6 +79,6 @@ setGeneric(name = "isCPLEXtermPointer",
            def  = function(object) { standardGeneric("isCPLEXtermPointer") }
 )
 
-setGeneric(name = "isNULLpointer",
-           def  = function(object) { standardGeneric("isNULLpointer") }
+setGeneric(name = "isNULLpointerCPLEX",
+           def  = function(object) { standardGeneric("isNULLpointerCPLEX") }
 )

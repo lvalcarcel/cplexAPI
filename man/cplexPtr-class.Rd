@@ -10,20 +10,20 @@
 \alias{isCPLEXfilePointer,cplexPtr-method}
 \alias{isCPLEXprobPointer,cplexPtr-method}
 \alias{isCPLEXtermPointer,cplexPtr-method}
-\alias{isNULLpointer,cplexPtr-method}
-\alias{ptr,cplexPtr-method}
+\alias{isNULLpointerCPLEX,cplexPtr-method}
+\alias{cplexPointer,cplexPtr-method}
 \alias{summary,cplexPtr-method}
-\alias{pType,cplexPtr-method}
-\alias{pType<-,cplexPtr-method}
+\alias{cplexPtrType,cplexPtr-method}
+\alias{cplexPtrType<-,cplexPtr-method}
 \alias{isCPLEXchanPointer}
 \alias{isCPLEXenvPointer}
 \alias{isCPLEXfilePointer}
 \alias{isCPLEXprobPointer}
 \alias{isCPLEXtermPointer}
-\alias{isNULLpointer}
-\alias{ptr}
-\alias{pType}
-\alias{pType<-}
+\alias{isNULLpointerCPLEX}
+\alias{cplexPointer}
+\alias{cplexPtrType}
+\alias{cplexPtrType<-}
 
 \title{Class \code{"cplexPtr"}}
 
@@ -40,10 +40,10 @@
 
 \section{Slots}{
   \describe{
-    \item{\code{pType}:}{
+    \item{\code{cplexPtrType}:}{
         Object of class \code{"character"} giving the pointer type.
     }
-    \item{\code{ptr}:}{
+    \item{\code{cplexPointer}:}{
         Object of class \code{"externalptr"} containig the pointer to a
         C structure.
     }
@@ -53,31 +53,31 @@
 \section{Methods}{
   \describe{
     \item{isCPLEXchanPointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a pointer to a
+        returns \code{TRUE} if \code{cplexPointer(object)} is a pointer to a
         CPLEX channel, otherwise \code{FALSE}.
     }
     \item{isCPLEXenvPointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a pointer to a
+        returns \code{TRUE} if \code{cplexPointer(object)} is a pointer to a
         CPLEX environment, otherwise \code{FALSE}.
     }
     \item{isCPLEXfilePointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a pointer to a
+        returns \code{TRUE} if \code{cplexPointer(object)} is a pointer to a
         CPLEX file, otherwise \code{FALSE}.
     }
     \item{isCPLEXprobPointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a pointer to a
+        returns \code{TRUE} if \code{cplexPointer(object)} is a pointer to a
         CPLEX problem object, otherwise \code{FALSE}.
     }
     \item{isCPLEXtermPointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a pointer to a
+        returns \code{TRUE} if \code{cplexPointer(object)} is a pointer to a
         CPLEX termination signal, otherwise \code{FALSE}.
     }
-    \item{isNULLpointer}{\code{signature(object = "cplexPtr")}:
-        returns \code{TRUE} if \code{ptr(object)} is a NULL pointer,
+    \item{isNULLpointerCPLEX}{\code{signature(object = "cplexPtr")}:
+        returns \code{TRUE} if \code{cplexPointer(object)} is a NULL pointer,
         otherwise \code{FALSE}.
     }
-    \item{ptr}{\code{signature(object = "cplexPtr")}:
-        gets the \code{ptr} slot.
+    \item{cplexPointer}{\code{signature(object = "cplexPtr")}:
+        gets the \code{cplexPointer} slot.
     }
     \item{summary}{\code{signature(object = "cplexPtr")}:
         prints a summary of the problem object to the command line. If a
@@ -87,11 +87,11 @@
         The method returns invisibly \code{NULL}. The CPLEX environment pointer
         is needed as second argument \code{env} to \code{summary}.
     }
-    \item{pType}{\code{signature(object = "cplexPtr")}:
-        gets the \code{pType} slot.
+    \item{cplexPtrType}{\code{signature(object = "cplexPtr")}:
+        gets the \code{cplexPtrType} slot.
     }
-    \item{pType<-}{\code{signature(object = "cplexPtr")}:
-        sets the \code{pType} slot.
+    \item{cplexPtrType<-}{\code{signature(object = "cplexPtr")}:
+        sets the \code{cplexPtrType} slot.
     }
   }
 }

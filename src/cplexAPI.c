@@ -5536,6 +5536,9 @@ SEXP getMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int stsp  = 0;
     int nzcnt = 0;
 
+SEXP a = R_NilValue;
+SEXP b = R_NilValue;
+
     checkEnv(env);
     checkProb(lp);
 
@@ -5546,14 +5549,18 @@ SEXP getMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end) {
         PROTECT(beg         = Rf_allocVector(INTSXP, lgbeg));
         PROTECT(effortlevel = Rf_allocVector(INTSXP, lgbeg));
 
+        PROTECT(a = Rf_allocVector(INTSXP, 0));
+        PROTECT(b = Rf_allocVector(REALSXP, 0));
+
         ret = CPXgetmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
-                              &nzcnt, INTEGER(beg), NULL, NULL,
+                              &nzcnt, INTEGER(beg), INTEGER(a), REAL(b),
                               INTEGER(effortlevel), 0, &sp,
                               Rf_asInteger(begin), Rf_asInteger(end)
                              );
-
+        Rprintf("ret %i\n", sp);
+UNPROTECT(2);
         if (ret == CPXERR_NEGATIVE_SURPLUS) {
-            stsp         -= sp;
+            stsp               -= sp;
             PROTECT(varindices  = Rf_allocVector(INTSXP, stsp));
             PROTECT(values      = Rf_allocVector(REALSXP, stsp));
             status = CPXgetmipstarts(R_ExternalPtrAddr(env),

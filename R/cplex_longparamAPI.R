@@ -33,7 +33,7 @@
 setLongParmCPLEX <- function(env, parm, value) {
 
     status <- .Call("setLongParm", PACKAGE = "cplexAPI",
-                    ptr(env),
+                    cplexPointer(env),
                     as.integer(parm),
                     #as.integer(value)
                     as.numeric(value)
@@ -48,7 +48,7 @@ setLongParmCPLEX <- function(env, parm, value) {
 getLongParmCPLEX <- function(env, parm) {
 
     value <- .Call("getLongParm", PACKAGE = "cplexAPI",
-                   ptr(env),
+                   cplexPointer(env),
                    as.integer(parm)
              )
 
@@ -61,7 +61,7 @@ getLongParmCPLEX <- function(env, parm) {
 getInfoLongParmCPLEX <- function(env, parm) {
 
     param <- .Call("getInfoLongParm", PACKAGE = "cplexAPI",
-                   ptr(env),
+                   cplexPointer(env),
                    as.integer(parm)
              )
 

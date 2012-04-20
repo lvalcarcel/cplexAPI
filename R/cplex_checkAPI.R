@@ -43,8 +43,8 @@ checkCopyLpCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs, sense,
     }
 
     status <- .Call("checkCopyLp", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -93,8 +93,8 @@ checkCopyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs,
     }
 
     status <- .Call("checkCopyLpwNames", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(nCols),
                     as.integer(nRows),
                     as.integer(lpdir),
@@ -121,8 +121,8 @@ checkCopyLpwNamesCPLEX <- function(env, lp, nCols, nRows, lpdir, objf, rhs,
 checkCopyQuadCPLEX <- function(env, lp, qmatbeg, qmatcnt, qmatind, qmatval) {
 
     status <- .Call("checkCopyQuad", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(qmatbeg),
                     as.integer(qmatcnt),
                     as.integer(qmatind),
@@ -169,8 +169,8 @@ checkAddRowsCPLEX <- function(env, lp, ncols, nrows, nnz,
     }
 
     status <- .Call("checkAddRows", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(ncols),
                     as.integer(nrows),
                     as.integer(nnz),
@@ -214,8 +214,8 @@ checkAddColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
     }
 
     status <- .Call("checkAddCols", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(ncols),
                     as.integer(nnz),
                     as.numeric(objf),
@@ -236,8 +236,8 @@ checkAddColsCPLEX <- function(env, lp, ncols, nnz, objf, matbeg, matind, matval,
 checkChgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 
     status <- .Call("checkChgCoefList", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(nnz),
                     as.integer(ia),
                     as.integer(ja),
@@ -253,8 +253,8 @@ checkChgCoefListCPLEX <- function(env, lp, nnz, ia, ja, ra) {
 checkCopyColTypeCPLEX <- function(env, lp, xctype) {
 
     status <- .Call("checkCopyColType", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.character(paste(xctype, collapse = ""))
               )
 
@@ -289,8 +289,8 @@ checkValsCPLEX <- function(env, lp, nval,
     }
 
     status <- .Call("checkVals", PACKAGE = "cplexAPI",
-                    ptr(env),
-                    ptr(lp),
+                    cplexPointer(env),
+                    cplexPointer(lp),
                     as.integer(nval),
                     Crind,
                     Ccind,

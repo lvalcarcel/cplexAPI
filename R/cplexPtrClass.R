@@ -34,8 +34,8 @@
 # representation of class cplexPtr
 setClass(Class = "cplexPtr",
          representation(
-              pType = "character",
-              ptr  = "externalptr"
+              cplexPtrType = "character",
+              cplexPointer = "externalptr"
          )
          #, contains = "externalptr"
 )
@@ -50,10 +50,10 @@ setMethod(f = "initialize",
 
               fn <- attr(p, which = "CPLEXfn", exact = TRUE)
 
-              .Object@ptr   <- attr(p, which = w, exact = TRUE)
-              .Object@pType <- as.character(p)
+              .Object@cplexPointer <- attr(p, which = w, exact = TRUE)
+              .Object@cplexPtrType <- as.character(p)
 
-              attr(.Object@pType, which = "CPLEXfn") <- fn
+              attr(.Object@cplexPtrType, which = "CPLEXfn") <- fn
               
               return(.Object)
           
@@ -142,64 +142,70 @@ cplex_TermPointer <- function(pointer) {
 
 #------------------------------------------------------------------------------#
 
-setMethod("isNULLpointer", signature(object = "cplexPtr"),
+setMethod("isNULLpointerCPLEX", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isNULLptr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isNULLptr",
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 setMethod("isCPLEXprobPointer", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isCPLEXprobPtr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isCPLEXprobPtr",
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 setMethod("isCPLEXenvPointer", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isCPLEXenvPtr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isCPLEXenvPtr",
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 setMethod("isCPLEXfilePointer", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isCPLEXfilePtr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isCPLEXfilePtr",
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 setMethod("isCPLEXchanPointer", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isCPLEXchanPtr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isCPLEXchanPtr",
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 setMethod("isCPLEXtermPointer", signature(object = "cplexPtr"),
     function(object) {
-        return(.Call("isCPLEXtermPtr", PACKAGE = "cplexAPI", ptr(object)))
+        return(.Call("isCPLEXtermPtr", 
+                     PACKAGE = "cplexAPI", cplexPointer(object)))
     }
 )
 
 
 #------------------------------------------------------------------------------#
 
-# pType
-setMethod("pType", signature(object = "cplexPtr"),
+# cplexPtrType
+setMethod("cplexPtrType", signature(object = "cplexPtr"),
           function(object) {
-              return(object@pType)
+              return(object@cplexPtrType)
           }
 )
 
-setReplaceMethod("pType", signature = (object = "cplexPtr"),
+setReplaceMethod("cplexPtrType", signature = (object = "cplexPtr"),
                  function(object, value) {
-                     object@pType <- value
+                     object@cplexPtrType <- value
                      return(object)
                  }
 )
 
 
-# ptr
-setMethod("ptr", signature(object = "cplexPtr"),
+# cplexPointer
+setMethod("cplexPointer", signature(object = "cplexPtr"),
           function(object) {
-              return(object@ptr)
+              return(object@cplexPointer)
           }
 )
 
@@ -211,7 +217,7 @@ setMethod("show", signature(object = "cplexPtr"),
     
         fn <- NA
         
-        if (isNULLpointer(object)) {
+        if (isNULLpointerCPLEX(object)) {
             ptrtype <- "NULL"
         }
         else {
@@ -223,7 +229,8 @@ setMethod("show", signature(object = "cplexPtr"),
             }
             else if (isCPLEXfilePointer(object)) {
                 ptrtype <- "CPLEX file"
-                fn <- attr(pType(object), which = "CPLEXfn", exact = TRUE)
+                fn <- attr(cplexPtrType(object),
+                           which = "CPLEXfn", exact = TRUE)
             }
             else if (isCPLEXchanPointer(object)) {
                 ptrtype <- "CPLEX channel"
@@ -238,9 +245,11 @@ setMethod("show", signature(object = "cplexPtr"),
 
         cat("object of class ", dQuote("cplexPtr"),
             ": pointer to ", ptrtype, ".\n", sep = "")
-        cat(paste("Slot ", dQuote("pType"), ": ", pType(object), "\n", sep = ""))
-        cat(paste("Slot ", dQuote("ptr"), ":   ", sep = ""))
-        print(slot(object, "ptr"), sep = "")
+        cat(paste("Slot ",
+                  dQuote("cplexPtrType"), ": ",
+                  cplexPtrType(object), "\n", sep = ""))
+        cat(paste("Slot ", dQuote("cplexPointer"), ": ", sep = ""))
+        print(slot(object, "cplexPointer"), sep = "")
         if (!is.na(fn)) {
             cat(paste("Filename:   ", dQuote(fn), "\n"))
         }
@@ -253,7 +262,7 @@ setMethod("show", signature(object = "cplexPtr"),
 setMethod("summary", signature(object = "cplexPtr"),
     function(object, ...) {
 
-        if (isNULLpointer(object)) {
+        if (isNULLpointerCPLEX(object)) {
             cat("NULL pointer\n")
         }
         else {
