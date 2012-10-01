@@ -514,6 +514,10 @@ SEXP getSubStat(SEXP env, SEXP lp);
 /* get solution objective value */
 SEXP getObjVal(SEXP env, SEXP lp);
 
+/* access the currently best known bound of all the remaining open nodes
+   in a branch-and-cut tree */
+SEXP getBestObjVal(SEXP env, SEXP lp);
+
 /* get solution values for a range of problem variables */
 SEXP getProbVar(SEXP env, SEXP lp, SEXP begin, SEXP end);
 

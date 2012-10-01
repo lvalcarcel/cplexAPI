@@ -4579,6 +4579,31 @@ SEXP getObjVal(SEXP env, SEXP lp) {
 
 
 /* -------------------------------------------------------------------------- */
+/* access the currently best known bound of all the remaining open nodes
+   in a branch-and-cut tree */
+SEXP getBestObjVal(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+    double obj;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXgetbestobjval(R_ExternalPtrAddr(env),
+                              R_ExternalPtrAddr(lp), &obj);
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+        out = cpx_error(status);
+    }
+    else {
+        out = Rf_ScalarReal(obj);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* get solution values for a range of problem variables */
 SEXP getProbVar(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
@@ -5536,8 +5561,8 @@ SEXP getMIPstarts(SEXP env, SEXP lp, SEXP begin, SEXP end) {
     int stsp  = 0;
     int nzcnt = 0;
 
-SEXP a = R_NilValue;
-SEXP b = R_NilValue;
+    SEXP TMPa = R_NilValue;
+    SEXP TMPb = R_NilValue;
 
     checkEnv(env);
     checkProb(lp);
@@ -5549,16 +5574,17 @@ SEXP b = R_NilValue;
         PROTECT(beg         = Rf_allocVector(INTSXP, lgbeg));
         PROTECT(effortlevel = Rf_allocVector(INTSXP, lgbeg));
 
-        PROTECT(a = Rf_allocVector(INTSXP, 0));
-        PROTECT(b = Rf_allocVector(REALSXP, 0));
+        PROTECT(TMPa = Rf_allocVector(INTSXP, 0));
+        PROTECT(TMPb = Rf_allocVector(REALSXP, 0));
 
         ret = CPXgetmipstarts(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
-                              &nzcnt, INTEGER(beg), INTEGER(a), REAL(b),
+                              &nzcnt, INTEGER(beg), INTEGER(TMPa), REAL(TMPb),
                               INTEGER(effortlevel), 0, &sp,
                               Rf_asInteger(begin), Rf_asInteger(end)
                              );
-        Rprintf("ret %i\n", sp);
-UNPROTECT(2);
+        /* Rprintf("ret %i\n", sp); */
+        UNPROTECT(2);
+
         if (ret == CPXERR_NEGATIVE_SURPLUS) {
             stsp               -= sp;
             PROTECT(varindices  = Rf_allocVector(INTSXP, stsp));

@@ -69,6 +69,7 @@ CPXflushchannel              <- cplexAPI::flushChannelCPLEX
 CPXflushstdchannels          <- cplexAPI::flushStdChannelsCPLEX
 CPXfreepresolve              <- cplexAPI::freePresolveCPLEX
 CPXgetbase                   <- cplexAPI::getBaseCPLEX
+CPXgetbestobjval             <- cplexAPI::getBestObjValCPLEX
 CPXgetchannels               <- cplexAPI::getChannelsCPLEX
 CPXgetchgparam               <- cplexAPI::getChgParmCPLEX
 CPXgetcoef                   <- cplexAPI::getCoefCPLEX
@@ -98,7 +99,7 @@ CPXgetlongparam              <- cplexAPI::getLongParmCPLEX
 CPXgetlb                     <- cplexAPI::getLowerBndsCPLEX
 CPXgetmipstartindex          <- cplexAPI::getMIPstartIndexCPLEX
 CPXgetmipstartname           <- cplexAPI::getMIPstartNameCPLEX
-#CPXgetmipstarts              <- cplexAPI::getMIPstartsCPLEX
+CPXgetmipstarts              <- cplexAPI::getMIPstartsCPLEX
 CPXgetmethod                 <- cplexAPI::getMethodCPLEX
 CPXgetnumcols                <- cplexAPI::getNumColsCPLEX
 CPXgetnummipstarts           <- cplexAPI::getNumMIPstartsCPLEX

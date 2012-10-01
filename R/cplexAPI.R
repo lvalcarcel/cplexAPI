@@ -2286,6 +2286,19 @@ getObjValCPLEX <- function(env, lp) {
 
 #------------------------------------------------------------------------------#
 
+getBestObjValCPLEX <- function(env, lp) {
+
+    obj <- .Call("getBestObjVal", PACKAGE = "cplexAPI",
+                 cplexPointer(env),
+                 cplexPointer(lp)
+            )
+
+    return(cplexError(obj))
+}
+
+
+#------------------------------------------------------------------------------#
+
 getProbVarCPLEX <- function(env, lp, begin, end) {
 
     xval <- .Call("getProbVar", PACKAGE = "cplexAPI",

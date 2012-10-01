@@ -6,6 +6,15 @@
 
 
 % ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.3 2012-10-01}{
+  \itemize{
+    \item added getMIPstartsCPLEX to \file{NAMESPACE}
+    \item added function \code{getBestObjValCPLEX()}.
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
 \section{Changes in version 1.2.2 2012-04-20}{
   \itemize{
     \item renamed \code{cplexPtr} method \code{isNULLpointer} to
