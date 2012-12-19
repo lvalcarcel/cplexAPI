@@ -178,7 +178,32 @@ SEXP checkCopyQuad(SEXP env, SEXP lp,
     checkTypeOfProb(lp);
 
     chkstat = CPXcheckcopyquad(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
-                                rqmatbeg, rqmatcnt, rqmatind, rqmatval
+                               rqmatbeg, rqmatcnt, rqmatind, rqmatval
+                              );
+
+    if (chkstat != 0) {
+        status_message(R_ExternalPtrAddr(env), chkstat);
+    }
+
+    out = Rf_ScalarInteger(chkstat);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* validate the arguments of the corresponding CPXcopyqpsep routine */
+SEXP checkCopyQPsep(SEXP env, SEXP lp, SEXP qsepvec) {
+
+    SEXP out = R_NilValue;
+
+    const double *rqsepvec = REAL(qsepvec);
+
+    checkEnv(env);
+    checkProb(lp);
+
+    chkstat = CPXcheckcopyqpsep(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                rqsepvec
                                );
 
     if (chkstat != 0) {

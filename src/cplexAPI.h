@@ -169,6 +169,9 @@ SEXP copyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
 SEXP copyQuad(SEXP env, SEXP lp,
               SEXP qmatbeg, SEXP qmatcnt, SEXP qmatind, SEXP qmatval);
 
+/* copy the quadratic objective matrix Q for a separable QP problem */
+SEXP copyQPsep(SEXP env, SEXP lp, SEXP qsepvec);
+
 /* write a problem as text file */
 SEXP writeProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype);
 

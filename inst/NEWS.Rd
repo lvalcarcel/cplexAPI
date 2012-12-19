@@ -6,10 +6,18 @@
 
 
 % ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.4 2012-12-19}{
+  \itemize{
+    \item added functions \code{copyQPsepCPLEX} and \code{checkCopyQPsepCPLEX}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
 \section{Changes in version 1.2.3 2012-10-01}{
   \itemize{
     \item added getMIPstartsCPLEX to \file{NAMESPACE}
-    \item added function \code{getBestObjValCPLEX()}.
+    \item added function \code{getBestObjValCPLEX()}
   }
 }
 

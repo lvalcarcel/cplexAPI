@@ -545,6 +545,20 @@ copyQuadCPLEX <- function(env, lp, qmatbeg, qmatcnt, qmatind, qmatval) {
 
 #------------------------------------------------------------------------------#
 
+copyQPsepCPLEX <- function(env, lp, qsepvec) {
+
+    status <- .Call("copyQPsep", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.numeric(qsepvec)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
 writeProbCPLEX <- function(env, lp, fname, ftype = NULL) {
 
     if (is.null(ftype)) {

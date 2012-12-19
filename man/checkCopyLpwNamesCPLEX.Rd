@@ -8,7 +8,7 @@
 
 \description{
   Low level interface function to the IBM ILOG CPLEX function
-  \code{CPXcheckcopylpwnames}.  Consult the IBM ILOG CPLEX documentation for more
+  \code{CPXcheckcopylpwnames}. Consult the IBM ILOG CPLEX documentation for more
   detailed information.
 }
 

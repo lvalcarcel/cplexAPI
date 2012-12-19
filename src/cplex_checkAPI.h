@@ -57,6 +57,9 @@ SEXP checkCopyLpwNames(SEXP env, SEXP lp, SEXP nCols, SEXP nRows, SEXP lpdir,
 SEXP checkCopyQuad(SEXP env, SEXP lp,
                    SEXP qmatbeg, SEXP qmatcnt, SEXP qmatind, SEXP qmatval);
 
+/* validate the arguments of the corresponding CPXcopyqpsep routine */
+SEXP checkCopyQPsep(SEXP env, SEXP lp, SEXP qsepvec);
+
 /* validate the arguments of the corresponding CPXaddrows routine */
 SEXP checkAddRows(SEXP env, SEXP lp, SEXP ncols, SEXP nrows, SEXP nnz,
                   SEXP rhs, SEXP sense, SEXP matbeg, SEXP matind, SEXP matval,

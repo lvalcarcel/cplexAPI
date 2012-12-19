@@ -135,6 +135,20 @@ checkCopyQuadCPLEX <- function(env, lp, qmatbeg, qmatcnt, qmatind, qmatval) {
 
 #------------------------------------------------------------------------------#
 
+checkCopyQPsepCPLEX <- function(env, lp, qsepvec) {
+
+    status <- .Call("checkCopyQPsep", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.numeric(qsepvec)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
 checkAddRowsCPLEX <- function(env, lp, ncols, nrows, nnz,
                               matbeg, matind, matval,
                               rhs = NULL, sense = NULL,

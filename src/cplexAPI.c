@@ -1045,6 +1045,31 @@ SEXP copyQuad(SEXP env, SEXP lp,
 
 
 /* -------------------------------------------------------------------------- */
+/* copy the quadratic objective matrix Q for a separable QP problem */
+SEXP copyQPsep(SEXP env, SEXP lp, SEXP qsepvec) {
+
+    SEXP out = R_NilValue;
+
+    const double *rqsepvec = REAL(qsepvec);
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXcopyqpsep(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                          rqsepvec
+                         );
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* write a problem as text file */
 SEXP writeProb(SEXP env, SEXP lp, SEXP fname, SEXP ftype) {
 

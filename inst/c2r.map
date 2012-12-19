@@ -20,6 +20,7 @@ CPXcheckchgcoeflist          <- cplexAPI::checkChgCoefListCPLEX
 CPXcheckcopyctype            <- cplexAPI::checkCopyColTypeCPLEX
 CPXcheckcopylp               <- cplexAPI::checkCopyLpCPLEX
 CPXcheckcopylpwnames         <- cplexAPI::checkCopyLpwNamesCPLEX
+CPXcheckcopyqpsep            <- cplexAPI::checkCopyQPsepCPLEX
 CPXcheckcopyquad             <- cplexAPI::checkCopyQuadCPLEX
 CPXcheckvals                 <- cplexAPI::checkValsCPLEX
 CPXchgbds                    <- cplexAPI::chgBndsCPLEX
@@ -48,6 +49,7 @@ CPXcopylp                    <- cplexAPI::copyLpCPLEX
 CPXcopylpwnames              <- cplexAPI::copyLpwNamesCPLEX
 CPXcopyobjname               <- cplexAPI::copyObjNameCPLEX
 CPXcopypartialbase           <- cplexAPI::copyPartBaseCPLEX
+CPXcopyqpsep                 <- cplexAPI::copyQPsepCPLEX
 CPXcopyquad                  <- cplexAPI::copyQuadCPLEX
 CPXcopystart                 <- cplexAPI::copyStartCPLEX
 CPXdelchannel                <- cplexAPI::delChannelCPLEX
