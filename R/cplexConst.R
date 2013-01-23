@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplexConst.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
 #
-#  Copyright (C) 2011-2012 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+#  Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -292,11 +292,13 @@ CPX_PARAM_TUNINGREPEAT        <- 1111L
 CPX_PARAM_TUNINGTILIM         <- 1112L
 CPX_PARAM_TUNINGDISPLAY       <- 1113L
 CPX_PARAM_WRITELEVEL          <- 1114L
+CPX_PARAM_RANDOMSEED          <- 1124L
 CPX_PARAM_DETTILIM            <- 1127L
 CPX_PARAM_FILEENCODING        <- 1129L
 CPX_PARAM_APIENCODING         <- 1130L
 CPX_PARAM_SOLUTIONTARGET      <- 1131L
 CPX_PARAM_CLONELOG            <- 1132L
+CPX_PARAM_TUNINGDETTILIM      <- 1139L
 
 # Barrier is in bardefs.h, MIP is in mipdefs.h, QP is in qpdefs.h
 CPX_PARAM_ALL_MIN             <- 1000L
@@ -604,6 +606,8 @@ CPX_PARAM_MCFCUTS             <- 2134L
 CPX_PARAM_MIPKAPPASTATS       <- 2137L
 CPX_PARAM_AUXROOTTHREADS      <- 2139L
 CPX_PARAM_INTSOLFILEPREFIX    <- 2143L
+CPX_PARAM_PROBEDETTIME        <- 2150L
+CPX_PARAM_POLISHAFTERDETTIME  <- 2151L
 
 # Values for CPX_PARAM_SOLNPOOLREPLACE
 CPX_SOLNPOOL_FIFO    <- 0L

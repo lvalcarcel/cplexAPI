@@ -257,6 +257,7 @@
 \alias{CPX_PARAM_PARALLELMODE}
 \alias{CPX_PARAM_PERIND}
 \alias{CPX_PARAM_PERLIM}
+\alias{CPX_PARAM_POLISHAFTERDETTIME}
 \alias{CPX_PARAM_POLISHAFTEREPAGAP}
 \alias{CPX_PARAM_POLISHAFTEREPGAP}
 \alias{CPX_PARAM_POLISHAFTERINTSOL}
@@ -272,10 +273,12 @@
 \alias{CPX_PARAM_PRESLVND}
 \alias{CPX_PARAM_PRICELIM}
 \alias{CPX_PARAM_PROBE}
+\alias{CPX_PARAM_PROBEDETTIME}
 \alias{CPX_PARAM_PROBETIME}
 \alias{CPX_PARAM_QPMAKEPSDIND}
 \alias{CPX_PARAM_QPMETHOD}
 \alias{CPX_PARAM_QPNZREADLIM}
+\alias{CPX_PARAM_RANDOMSEED}
 \alias{CPX_PARAM_REDUCE}
 \alias{CPX_PARAM_REINV}
 \alias{CPX_PARAM_RELAXPREIND}
@@ -309,6 +312,7 @@
 \alias{CPX_PARAM_THREADS}
 \alias{CPX_PARAM_TILIM}
 \alias{CPX_PARAM_TRELIM}
+\alias{CPX_PARAM_TUNINGDETTILIM}
 \alias{CPX_PARAM_TUNINGDISPLAY}
 \alias{CPX_PARAM_TUNINGMEASURE}
 \alias{CPX_PARAM_TUNINGREPEAT}
@@ -810,11 +814,13 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
     \code{CPX_PARAM_TUNINGTILIM}         \tab \code{1112} \cr
     \code{CPX_PARAM_TUNINGDISPLAY}       \tab \code{1113} \cr
     \code{CPX_PARAM_WRITELEVEL}          \tab \code{1114} \cr
+    \code{CPX_PARAM_RANDOMSEED}          \tab \code{1124} \cr
     \code{CPX_PARAM_DETTILIM}            \tab \code{1127} \cr
     \code{CPX_PARAM_FILEENCODING}        \tab \code{1129} \cr
     \code{CPX_PARAM_APIENCODING}         \tab \code{1130} \cr
     \code{CPX_PARAM_SOLUTIONTARGET}      \tab \code{1131} \cr
     \code{CPX_PARAM_CLONELOG}            \tab \code{1132} \cr
+    \code{CPX_PARAM_TUNINGDETTILIM}      \tab \code{1139} \cr
 
     \code{CPX_PARAM_ALL_MIN}             \tab \code{1000} \cr
     \code{CPX_PARAM_ALL_MAX}             \tab \code{6000} \cr
@@ -1179,6 +1185,8 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
     \code{CPX_PARAM_MIPKAPPASTATS}       \tab \code{2137} \cr
     \code{CPX_PARAM_AUXROOTTHREADS}      \tab \code{2139} \cr
     \code{CPX_PARAM_INTSOLFILEPREFIX}    \tab \code{2143} \cr
+    \code{CPX_PARAM_PROBEDETTIME}        \tab \code{2150} \cr
+    \code{CPX_PARAM_POLISHAFTERDETTIME}  \tab \code{2151} \cr
   }
 }
 

@@ -1,4 +1,4 @@
-AC_INIT([cplexAPI], [1.2.4], [geliudie@uni-duesseldorf.de])
+AC_INIT([cplexAPI], [1.2.6], [geliudie@uni-duesseldorf.de])
 
 ## adopted from configure.ac in Rcplex_0.3-0
 
@@ -179,14 +179,14 @@ dnl check for awk
     fi
 
     if test [ -z "$MACHINE" ] ; then
-        MACHINE=`ls -l ${CPLEX_DIR}/lib | ${AWK} '($1 ~ /^d/) { print $NF }' | head -n1`
+        MACHINE=`ls -l ${CPLEX_DIR}/lib | ${AWK} '($1 ~ /^d/) { print $NF }' | head -n 1`
         if test [ -z "$MACHINE" -o ! -d "$CPLEX_DIR/lib/${MACHINE}" ] ; then
             AC_MSG_ERROR([could not determine platform type])
         fi
         AC_MSG_NOTICE([platform type is $MACHINE])
     fi
 
-    LIBFORMAT=`ls -l ${CPLEX_DIR}/lib/${MACHINE} | ${AWK} '($1 ~ /^d/) { print $NF }' | head -n1`
+    LIBFORMAT=`ls -l ${CPLEX_DIR}/lib/${MACHINE} | ${AWK} '($1 ~ /^d/) { print $NF }' | head -n 1`
     if test [ -z "$LIBFORMAT" -o ! -d "${CPLEX_DIR}/lib/${MACHINE}/${LIBFORMAT}" ] ; then
         AC_MSG_ERROR([could not determine library type])
     fi
@@ -197,9 +197,16 @@ dnl check for awk
         AC_MSG_ERROR([could not find Makefile in $CPLEX_MAKEFILE])
     fi
     AC_MSG_NOTICE([path to example Makefile is $CPLEX_MAKEFILE])
-
     CPLEXLIBDIR="${CPLEX_DIR}/lib/${MACHINE}/${LIBFORMAT}"
-    CPLEX_LIBS="-L${CPLEXLIBDIR} `${AWK} 'BEGIN {ORS = " "} /^CLNFLAGS/ { for (i=4;i<=NF;++i) print $i }' ${CPLEX_MAKEFILE}`"
+    
+    MAKEFILEVERSION=`${AWK} 'BEGIN {ORS = ""} /^CLNFLAGS/ { print $3 }' ${CPLEX_MAKEFILE}`
+    ## AC_MSG_NOTICE([version $MAKEFILEVERSION])
+    
+    if test [ "${MAKEFILEVERSION}" = "-lcplex" ] ; then
+        CPLEX_LIBS="-L${CPLEXLIBDIR} `${AWK} 'BEGIN {ORS = " "} /^CLNFLAGS/ { for (i=3;i<=NF;++i) print $i }' ${CPLEX_MAKEFILE}`"
+    else
+        CPLEX_LIBS="-L${CPLEXLIBDIR} `${AWK} 'BEGIN {ORS = " "} /^CLNFLAGS/ { for (i=4;i<=NF;++i) print $i }' ${CPLEX_MAKEFILE}`"
+    fi
     if test [ -z CPLEX_LIBS ] ; then
         AC_MSG_ERROR([could not get linker options from CPLEX example Makefile])
     fi

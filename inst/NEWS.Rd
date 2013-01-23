@@ -6,6 +6,26 @@
 
 
 % ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.6 2013-01-23}{
+  \itemize{
+    \item does not print the version number of IBM ILOG CPLEX on startup
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.5 2013-01-23}{
+  \itemize{
+    \item added support for IBM ILOG CPLEX version 12.5
+    \item minor update in file \file{configure.ac} to be compatible with
+          IBM ILOG CPLEX version 12.5
+    \item minor change in file \file{src/Makevars.win}
+    \item prints the version number of IBM ILOG CPLEX on startup
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
 \section{Changes in version 1.2.4 2012-12-19}{
   \itemize{
     \item added functions \code{copyQPsepCPLEX} and \code{checkCopyQPsepCPLEX}
