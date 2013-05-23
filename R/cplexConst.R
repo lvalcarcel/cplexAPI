@@ -27,7 +27,7 @@
 
 
 #------------------------------------------------------------------------------#
-#              global variables (from cpxconst.h [12.4.0.0])                   #
+#              global variables (from cpxconst.h [12.5.0.0])                   #
 #------------------------------------------------------------------------------#
 
 # CPX_INFBOUND:  Any bound bigger than this is treated as infinity
@@ -46,12 +46,12 @@ CPX_PARAMTYPE_LONG   <- 4L
 
 #------------------------------------------------------------------------------#
 # Values returned for 'stat' by solution
-CPX_STAT_OPTIMAL                <- 1L
-CPX_STAT_UNBOUNDED              <- 2L
-CPX_STAT_INFEASIBLE             <- 3L
-CPX_STAT_INForUNBD              <- 4L
-CPX_STAT_OPTIMAL_INFEAS         <- 5L
-CPX_STAT_NUM_BEST               <- 6L
+CPX_STAT_OPTIMAL                <-  1L
+CPX_STAT_UNBOUNDED              <-  2L
+CPX_STAT_INFEASIBLE             <-  3L
+CPX_STAT_INForUNBD              <-  4L
+CPX_STAT_OPTIMAL_INFEAS         <-  5L
+CPX_STAT_NUM_BEST               <-  6L
 CPX_STAT_ABORT_IT_LIM           <- 10L
 CPX_STAT_ABORT_TIME_LIM         <- 11L
 CPX_STAT_ABORT_OBJ_LIM          <- 12L
@@ -92,20 +92,20 @@ CPX_PREROW_OTHER <- -3L # other, for example merge two inequalities
 
 #------------------------------------------------------------------------------#
 # Generic constants
-CPX_ON  <- 1L
-CPX_OFF <- 0L
+CPX_ON  <-  1L
+CPX_OFF <-  0L
 CPX_MAX <- -1L
-CPX_MIN <- 1L
+CPX_MIN <-  1L
 
 
 #------------------------------------------------------------------------------#
 # Primal simplex pricing algorithm
 CPX_PPRIIND_PARTIAL     <- -1L
-CPX_PPRIIND_AUTO        <- 0L
-CPX_PPRIIND_DEVEX       <- 1L
-CPX_PPRIIND_STEEP       <- 2L
-CPX_PPRIIND_STEEPQSTART <- 3L
-CPX_PPRIIND_FULL        <- 4L
+CPX_PPRIIND_AUTO        <-  0L
+CPX_PPRIIND_DEVEX       <-  1L
+CPX_PPRIIND_STEEP       <-  2L
+CPX_PPRIIND_STEEPQSTART <-  3L
+CPX_PPRIIND_FULL        <-  4L
 
 
 #------------------------------------------------------------------------------#
@@ -120,8 +120,8 @@ CPX_DPRIIND_DEVEX       <- 5L
 
 #------------------------------------------------------------------------------#
 # PARALLELMODE values
-CPX_PARALLEL_DETERMINISTIC <- 1L
-CPX_PARALLEL_AUTO          <- 0L
+CPX_PARALLEL_DETERMINISTIC <-  1L
+CPX_PARALLEL_AUTO          <-  0L
 CPX_PARALLEL_OPPORTUNISTIC <- -1L
 
 
@@ -146,16 +146,16 @@ CPX_SOLUTIONTARGET_FIRSTORDER    <- 2L
 # CPX_PARAM_LPMETHOD/CPX_PARAM_QPMETHOD/CPX_PARAM_BARCROSSALG/
 # CPXgetmethod/...
 CPX_ALG_NONE       <- -1L
-CPX_ALG_AUTOMATIC  <- 0L
-CPX_ALG_PRIMAL     <- 1L
-CPX_ALG_DUAL       <- 2L
-CPX_ALG_NET        <- 3L
-CPX_ALG_BARRIER    <- 4L
-CPX_ALG_SIFTING    <- 5L
-CPX_ALG_CONCURRENT <- 6L
-CPX_ALG_BAROPT     <- 7L
-CPX_ALG_PIVOTIN    <- 8L
-CPX_ALG_PIVOTOUT   <- 9L
+CPX_ALG_AUTOMATIC  <-  0L
+CPX_ALG_PRIMAL     <-  1L
+CPX_ALG_DUAL       <-  2L
+CPX_ALG_NET        <-  3L
+CPX_ALG_BARRIER    <-  4L
+CPX_ALG_SIFTING    <-  5L
+CPX_ALG_CONCURRENT <-  6L
+CPX_ALG_BAROPT     <-  7L
+CPX_ALG_PIVOTIN    <-  8L
+CPX_ALG_PIVOTOUT   <-  9L
 CPX_ALG_PIVOT      <- 10L
 CPX_ALG_FEASOPT    <- 11L
 CPX_ALG_MIP        <- 12L
@@ -204,25 +204,25 @@ CPX_STAT_CONFLICT_ABORT_DETTIME_LIM   <- 39L
 #------------------------------------------------------------------------------#
 # Conflict status values
 CPX_CONFLICT_EXCLUDED        <- -1L
-CPX_CONFLICT_POSSIBLE_MEMBER <- 0L
-CPX_CONFLICT_POSSIBLE_LB     <- 1L
-CPX_CONFLICT_POSSIBLE_UB     <- 2L
-CPX_CONFLICT_MEMBER          <- 3L
-CPX_CONFLICT_LB              <- 4L
-CPX_CONFLICT_UB              <- 5L
+CPX_CONFLICT_POSSIBLE_MEMBER <-  0L
+CPX_CONFLICT_POSSIBLE_LB     <-  1L
+CPX_CONFLICT_POSSIBLE_UB     <-  2L
+CPX_CONFLICT_MEMBER          <-  3L
+CPX_CONFLICT_LB              <-  4L
+CPX_CONFLICT_UB              <-  5L
 
 
 #------------------------------------------------------------------------------#
 # Problem Types
 # Types 4, 9, and 12 are internal, the others are for users
-CPXPROB_LP                    <- 0L
-CPXPROB_MILP                  <- 1L
-CPXPROB_FIXEDMILP             <- 3L
-CPXPROB_NODELP                <- 4L
-CPXPROB_QP                    <- 5L
-CPXPROB_MIQP                  <- 7L
-CPXPROB_FIXEDMIQP             <- 8L
-CPXPROB_NODEQP                <- 9L
+CPXPROB_LP                    <-  0L
+CPXPROB_MILP                  <-  1L
+CPXPROB_FIXEDMILP             <-  3L
+CPXPROB_NODELP                <-  4L
+CPXPROB_QP                    <-  5L
+CPXPROB_MIQP                  <-  7L
+CPXPROB_FIXEDMIQP             <-  8L
+CPXPROB_NODEQP                <-  9L
 CPXPROB_QCP                   <- 10L
 CPXPROB_MIQCP                 <- 11L
 CPXPROB_NODEQCP               <- 12L
@@ -320,15 +320,15 @@ CPX_TUNE_DETTILIM  <- 3L
 
 #------------------------------------------------------------------------------#
 # Quality query identifiers
-CPX_MAX_PRIMAL_INFEAS          <- 1L
-CPX_MAX_SCALED_PRIMAL_INFEAS   <- 2L
-CPX_SUM_PRIMAL_INFEAS          <- 3L
-CPX_SUM_SCALED_PRIMAL_INFEAS   <- 4L
-CPX_MAX_DUAL_INFEAS            <- 5L
-CPX_MAX_SCALED_DUAL_INFEAS     <- 6L
-CPX_SUM_DUAL_INFEAS            <- 7L
-CPX_SUM_SCALED_DUAL_INFEAS     <- 8L
-CPX_MAX_INT_INFEAS             <- 9L
+CPX_MAX_PRIMAL_INFEAS          <-  1L
+CPX_MAX_SCALED_PRIMAL_INFEAS   <-  2L
+CPX_SUM_PRIMAL_INFEAS          <-  3L
+CPX_SUM_SCALED_PRIMAL_INFEAS   <-  4L
+CPX_MAX_DUAL_INFEAS            <-  5L
+CPX_MAX_SCALED_DUAL_INFEAS     <-  6L
+CPX_SUM_DUAL_INFEAS            <-  7L
+CPX_SUM_SCALED_DUAL_INFEAS     <-  8L
+CPX_MAX_INT_INFEAS             <-  9L
 CPX_SUM_INT_INFEAS             <- 10L
 CPX_MAX_PRIMAL_RESIDUAL        <- 11L
 CPX_MAX_SCALED_PRIMAL_RESIDUAL <- 12L
@@ -439,11 +439,11 @@ CPX_TYPE_ANY                 <- "A"
 
 # Variable selection values
 CPX_VARSEL_MININFEAS      <- -1L
-CPX_VARSEL_DEFAULT        <- 0L
-CPX_VARSEL_MAXINFEAS      <- 1L
-CPX_VARSEL_PSEUDO         <- 2L
-CPX_VARSEL_STRONG         <- 3L
-CPX_VARSEL_PSEUDOREDUCED  <- 4L
+CPX_VARSEL_DEFAULT        <-  0L
+CPX_VARSEL_MAXINFEAS      <-  1L
+CPX_VARSEL_PSEUDO         <-  2L
+CPX_VARSEL_STRONG         <-  3L
+CPX_VARSEL_PSEUDOREDUCED  <-  4L
 
 # Node selection values
 CPX_NODESEL_DFS           <- 0L
@@ -457,14 +457,14 @@ CPX_MIPORDER_BOUNDS              <- 2L
 CPX_MIPORDER_SCALEDCOST          <- 3L
 
 # Values for direction array
-CPX_BRANCH_GLOBAL                <- 0L
+CPX_BRANCH_GLOBAL                <-  0L
 CPX_BRANCH_DOWN                  <- -1L
-CPX_BRANCH_UP                    <- 1L
+CPX_BRANCH_UP                    <-  1L
 
 # Values for CPX_PARAM_BRDIR
 CPX_BRDIR_DOWN                   <- -1L
-CPX_BRDIR_AUTO                   <- 0L
-CPX_BRDIR_UP                     <- 1L
+CPX_BRDIR_AUTO                   <-  0L
+CPX_BRDIR_UP                     <-  1L
 
 # Values for CPX_PARAM_MIPSEARCH
 CPX_MIPSEARCH_AUTO         <- 0L
@@ -473,9 +473,9 @@ CPX_MIPSEARCH_DYNAMIC      <- 2L
 
 # Values for CPX_PARAM_MIPKAPPASTATS
 CPX_MIPKAPPA_OFF     <- -1L
-CPX_MIPKAPPA_AUTO    <- 0L
-CPX_MIPKAPPA_SAMPLE  <- 1L
-CPX_MIPKAPPA_FULL    <- 2L
+CPX_MIPKAPPA_AUTO    <-  0L
+CPX_MIPKAPPA_SAMPLE  <-  1L
+CPX_MIPKAPPA_FULL    <-  2L
 
 # Effort levels for MIP starts
 CPX_MIPSTART_AUTO          <- 0L
@@ -622,18 +622,18 @@ CPX_SOLNPOOL_FILTER_RANGE       <- 2L
 # File: gcconst.h
 # Version 12.3
 
-CPX_CON_LOWER_BOUND          <- 1L
-CPX_CON_UPPER_BOUND          <- 2L
-CPX_CON_LINEAR               <- 3L
-CPX_CON_QUADRATIC            <- 4L
-CPX_CON_SOS                  <- 5L
-CPX_CON_INDICATOR            <- 6L
+CPX_CON_LOWER_BOUND          <-  1L
+CPX_CON_UPPER_BOUND          <-  2L
+CPX_CON_LINEAR               <-  3L
+CPX_CON_QUADRATIC            <-  4L
+CPX_CON_SOS                  <-  5L
+CPX_CON_INDICATOR            <-  6L
 
 # internal types
-CPX_CON_MINEXPR              <- 7L
-CPX_CON_MAXEXPR              <- 8L
-CPX_CON_PWL                  <- 9L
-CPX_CON_ABS                  <- 9L  # same as PWL since using it
+CPX_CON_MINEXPR              <-  7L
+CPX_CON_MAXEXPR              <-  8L
+CPX_CON_PWL                  <-  9L
+CPX_CON_ABS                  <-  9L  # same as PWL since using it
 CPX_CON_DISJCST              <- 10L
 CPX_CON_INDDISJCST           <- 11L
 CPX_CON_SETVAR               <- 12L

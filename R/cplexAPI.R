@@ -2313,6 +2313,19 @@ getBestObjValCPLEX <- function(env, lp) {
 
 #------------------------------------------------------------------------------#
 
+getMIPrelGapCPLEX <- function(env, lp) {
+
+    gap <- .Call("getMIPrelGap", PACKAGE = "cplexAPI",
+                 cplexPointer(env),
+                 cplexPointer(lp)
+            )
+
+    return(cplexError(gap))
+}
+
+
+#------------------------------------------------------------------------------#
+
 getProbVarCPLEX <- function(env, lp, begin, end) {
 
     xval <- .Call("getProbVar", PACKAGE = "cplexAPI",
@@ -2975,3 +2988,78 @@ getQuadCPLEX <- function(env, lp, begin, end) {
 
     return(cplexError(cols))
 }
+
+
+#------------------------------------------------------------------------------#
+
+copyOrderCPLEX <- function(env, lp, cnt, indices,
+                           priority = NULL, direction = NULL) {
+
+    if (is.null(priority)) {
+        Cpriority <- as.null(priority)
+    }
+    else {
+        Cpriority <- as.integer(priority)
+    }
+
+    if (is.null(direction)) {
+        Cdirection <- as.null(direction)
+    }
+    else {
+        Cdirection <- as.integer(direction)
+    }
+
+    status <- .Call("copyOrder", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.integer(cnt),
+                    as.integer(indices),
+                    Cpriority,
+                    Cdirection
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+getOrderCPLEX <- function(env, lp) {
+
+    cols <- .Call("getOrder", PACKAGE = "cplexAPI",
+                   cplexPointer(env),
+                   cplexPointer(lp)
+            )
+
+    return(cplexError(cols))
+}
+
+
+#------------------------------------------------------------------------------#
+
+ordWriteCPLEX <- function(env, lp, fname) {
+
+    status <- .Call("ordWrite", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.character(fname)
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+readCopyOrderCPLEX <- function(env, lp, fname) {
+
+    status <- .Call("readCopyOrder", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.character(fname)
+              )
+
+    return(status)
+}
+
+

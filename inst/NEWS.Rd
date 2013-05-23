@@ -6,9 +6,35 @@
 
 
 % ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.9 2013-05-23}{
+  \itemize{
+    \item added functions \code{copyOrderCPLEX()}, \code{getOrderCPLEX()},
+          \code{readCopyOrderCPLEX} and \code{ordWriteCPLEX}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.8 2013-04-10}{
+  \itemize{
+    \item bugfix in function \code{getMIPrelGapCPLEX()}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.7 2013-04-08}{
+  \itemize{
+    \item added function \code{getMIPrelGapCPLEX()}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
 \section{Changes in version 1.2.6 2013-01-23}{
   \itemize{
-    \item does not print the version number of IBM ILOG CPLEX on startup
+    \item does not print the version number of IBM ILOG CPLEX on startup,
+          because of problems with IBM ILOG CPLEX versions less than 12.5
   }
 }
 

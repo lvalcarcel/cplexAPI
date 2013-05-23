@@ -4629,6 +4629,31 @@ SEXP getBestObjVal(SEXP env, SEXP lp) {
 
 
 /* -------------------------------------------------------------------------- */
+/* access the relative objective gap for a MIP optimization */
+SEXP getMIPrelGap(SEXP env, SEXP lp) {
+
+    SEXP out = R_NilValue;
+
+    double gap;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXgetmiprelgap(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             &gap);
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+        out = cpx_error(status);
+    }
+    else {
+        out = Rf_ScalarReal(gap);
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
 /* get solution values for a range of problem variables */
 SEXP getProbVar(SEXP env, SEXP lp, SEXP begin, SEXP end) {
 
@@ -6043,6 +6068,151 @@ SEXP getQuad(SEXP env, SEXP lp, SEXP begin, SEXP end) {
         UNPROTECT(1);
 
     }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* copy a priority order to a CPLEX problem object */
+SEXP copyOrder(SEXP env, SEXP lp, SEXP cnt, SEXP ind, SEXP prior, SEXP dir) {
+
+    SEXP out = R_NilValue;
+
+    int *rind = INTEGER(ind);
+    const int *rprior;
+    const int *rdir;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    if (prior == R_NilValue) {
+        rprior = NULL;
+    }
+    else {
+        rprior = INTEGER(prior);
+    }
+
+    if (dir == R_NilValue) {
+        rdir = NULL;
+    }
+    else {
+        rdir = INTEGER(dir);
+    }
+
+    status = CPXcopyorder(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                          Rf_asInteger(cnt), rind, rprior, rdir
+                        );
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access all the MIP priority order information */
+SEXP getOrder(SEXP env, SEXP lp) {
+
+    SEXP out   = R_NilValue;
+    SEXP listn = R_NilValue;
+    SEXP ind   = R_NilValue;
+    SEXP prior = R_NilValue;
+    SEXP dir   = R_NilValue;
+
+    int ret, sp;
+    int nentr = 0;
+    int ordsp = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    ret = CPXgetorder(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                      &nentr, NULL, NULL, NULL, 0, &sp);
+
+    if (ret == CPXERR_NEGATIVE_SURPLUS) {
+        ordsp -= sp;
+        PROTECT(ind   = Rf_allocVector(INTSXP, ordsp));
+        PROTECT(prior = Rf_allocVector(INTSXP, ordsp));
+        PROTECT(dir   = Rf_allocVector(INTSXP, ordsp));
+        status = CPXgetorder(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             &nentr, INTEGER(ind), INTEGER(prior), INTEGER(dir),
+                             ordsp, &sp);
+        if (status != 0) {
+            status_message(R_ExternalPtrAddr(env), status);
+            out = cpx_error(status);
+        }
+        else {
+            PROTECT(out = Rf_allocVector(VECSXP, 3));
+            SET_VECTOR_ELT(out, 0, ind);
+            SET_VECTOR_ELT(out, 1, prior);
+            SET_VECTOR_ELT(out, 2, dir);
+
+            PROTECT(listn = Rf_allocVector(STRSXP, 3));
+            SET_STRING_ELT(listn, 0, Rf_mkChar("indices"));
+            SET_STRING_ELT(listn, 1, Rf_mkChar("priority"));
+            SET_STRING_ELT(listn, 2, Rf_mkChar("direction"));
+            Rf_setAttrib(out, R_NamesSymbol, listn);
+
+            UNPROTECT(2);
+        }
+        UNPROTECT(3);
+    }
+    else {
+        if (ret != 0) {
+            status_message(R_ExternalPtrAddr(env), ret);
+            out = cpx_error(ret);
+        }
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* write a priority order to an ORD file */
+SEXP ordWrite(SEXP env, SEXP lp, SEXP fname) {
+
+    SEXP out = R_NilValue;
+
+    const char *rfname = CHAR(STRING_ELT(fname, 0));
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXordwrite(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp), rfname);
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* read ORD file and copy priority order information into a problem object */
+SEXP readCopyOrder(SEXP env, SEXP lp, SEXP fname) {
+
+    SEXP out = R_NilValue;
+
+    const char *rfname = CHAR(STRING_ELT(fname, 0));
+
+    checkProb(lp);
+    checkEnv(env);
+
+    status = CPXreadcopyorder(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                              rfname);
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
 
     return out;
 }

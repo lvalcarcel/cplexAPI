@@ -1,19 +1,18 @@
-\name{setIntParmCPLEX}
-\alias{setIntParmCPLEX}
-\alias{CPXsetintparam}
+\name{ordWriteCPLEX}
+\alias{ordWriteCPLEX}
+\alias{CPXordwrite}
 
 \title{
-  Set the Value of a CPLEX Parameter of Type CPXINT
+  Write Priority Order to ORD File
 }
 
 \description{
   Low level interface function to the IBM ILOG CPLEX function
-  \code{CPXsetintparam}.  Consult the IBM ILOG CPLEX documentation for
+  \code{CPXordwrite}.  Consult the IBM ILOG CPLEX documentation for
   more detailed information.
 }
-
 \usage{
-  setIntParmCPLEX(env, parm, value)
+  ordWriteCPLEX(env, lp, fname)
 }
 
 \arguments{
@@ -22,17 +21,19 @@
     \code{\link{openEnvCPLEX}}. This is basically a pointer to an
     IBM ILOG CPLEX environment.
   }
-  \item{parm}{
-    Constant or reference number of the desired parameter.
+  \item{lp}{
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
-  \item{value}{
-    The new value of the parameter (integer value).
+  \item{fname}{
+    Filename.
   }
 }
 
 \details{
-  Interface to the C function \code{setIntParm} which calls the CPLEX
-  function \code{CPXsetintparam}.
+  Interface to the C function \code{ordWrite} which calls the CPLEX
+  function \code{CPXordwrite}.
 }
 
 \value{

@@ -174,6 +174,7 @@ static const R_CallMethodDef callMethods[] = {
     {"getSubStat",                (DL_FUNC) &getSubStat,                2},
     {"getObjVal",                 (DL_FUNC) &getObjVal,                 2},
     {"getBestObjVal",             (DL_FUNC) &getBestObjVal,             2},
+    {"getMIPrelGap",              (DL_FUNC) &getMIPrelGap,              2},
     {"getProbVar",                (DL_FUNC) &getProbVar,                4},
     {"getSlack",                  (DL_FUNC) &getSlack,                  4},
     {"getPi",                     (DL_FUNC) &getPi,                     4},
@@ -215,6 +216,10 @@ static const R_CallMethodDef callMethods[] = {
     {"getNumQuad",                (DL_FUNC) &getNumQuad,                2},
     {"getQPcoef",                 (DL_FUNC) &getQPcoef,                 4},
     {"getQuad",                   (DL_FUNC) &getQuad,                   4},
+    {"copyOrder",                 (DL_FUNC) &copyOrder,                 6},
+    {"getOrder",                  (DL_FUNC) &getOrder,                  2},
+    {"ordWrite",                  (DL_FUNC) &ordWrite,                  3},
+    {"readCopyOrder",             (DL_FUNC) &readCopyOrder,             3},
 
 /* -------------------------------------------------------------------------- */
 /* check                                                                      */

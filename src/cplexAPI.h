@@ -521,6 +521,9 @@ SEXP getObjVal(SEXP env, SEXP lp);
    in a branch-and-cut tree */
 SEXP getBestObjVal(SEXP env, SEXP lp);
 
+/* access the relative objective gap for a MIP optimization */
+SEXP getMIPrelGap(SEXP env, SEXP lp);
+
 /* get solution values for a range of problem variables */
 SEXP getProbVar(SEXP env, SEXP lp, SEXP begin, SEXP end);
 
@@ -662,3 +665,15 @@ SEXP getQPcoef(SEXP env, SEXP lp, SEXP i, SEXP j);
 /* access a range of columns of the matrix Q of a model with a quadratic
    objective function */
 SEXP getQuad(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* copy a priority order to a CPLEX problem object */
+SEXP copyOrder(SEXP env, SEXP lp, SEXP cnt, SEXP ind, SEXP prior, SEXP dir);
+
+/* access all the MIP priority order information */
+SEXP getOrder(SEXP env, SEXP lp);
+
+/* write a priority order to an ORD file */
+SEXP ordWrite(SEXP env, SEXP lp, SEXP fname);
+
+/* read ORD file and copy priority order information into a problem object */
+SEXP readCopyOrder(SEXP env, SEXP lp, SEXP fname);

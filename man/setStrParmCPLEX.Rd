@@ -26,7 +26,7 @@
     Constant or reference number of the desired parameter.
   }
   \item{value}{
-    The new value of the parameter.
+    The new value of the parameter (character value).
   }
 }
 

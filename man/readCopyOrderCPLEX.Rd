@@ -1,19 +1,18 @@
-\name{setIntParmCPLEX}
-\alias{setIntParmCPLEX}
-\alias{CPXsetintparam}
+\name{readCopyOrderCPLEX}
+\alias{readCopyOrderCPLEX}
+\alias{CPXreadcopyorder}
 
 \title{
-  Set the Value of a CPLEX Parameter of Type CPXINT
+  Read ORD File
 }
 
 \description{
   Low level interface function to the IBM ILOG CPLEX function
-  \code{CPXsetintparam}.  Consult the IBM ILOG CPLEX documentation for
-  more detailed information.
+  \code{CPXreadcopyorder}.  Consult the IBM ILOG CPLEX documentation for more
+  detailed information.
 }
-
 \usage{
-  setIntParmCPLEX(env, parm, value)
+  readCopyOrderCPLEX(env, lp, fname)
 }
 
 \arguments{
@@ -22,17 +21,19 @@
     \code{\link{openEnvCPLEX}}. This is basically a pointer to an
     IBM ILOG CPLEX environment.
   }
-  \item{parm}{
-    Constant or reference number of the desired parameter.
+  \item{lp}{
+    An object of class \code{"\linkS4class{cplexPtr}"} as returned by
+    \code{\link{initProbCPLEX}}. This is basically a pointer to an
+    IBM ILOG CPLEX problem object.
   }
-  \item{value}{
-    The new value of the parameter (integer value).
+  \item{fname}{
+    Single character value giving the filname to read from.
   }
 }
 
 \details{
-  Interface to the C function \code{setIntParm} which calls the CPLEX
-  function \code{CPXsetintparam}.
+  Interface to the C function \code{readCopyOrder} which calls the CPLEX
+  function \code{CPXreadcopyorder}.
 }
 
 \value{
@@ -50,8 +51,5 @@
   Maintainer: Gabriel Gelius-Dietrich <geliudie@uni-duesseldorf.de>
 }
 
-\seealso{
-  \code{\link{cplexConstants}}
-}
-
 \keyword{ optimize }
+
