@@ -1,7 +1,7 @@
 /* init.c
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1 to 12.6.
 
-   Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+   Copyright (C) 2011-2014 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -220,6 +220,12 @@ static const R_CallMethodDef callMethods[] = {
     {"getOrder",                  (DL_FUNC) &getOrder,                  2},
     {"ordWrite",                  (DL_FUNC) &ordWrite,                  3},
     {"readCopyOrder",             (DL_FUNC) &readCopyOrder,             3},
+    {"addQConstr",                (DL_FUNC) &addQConstr,               12},
+    {"delQConstrs",               (DL_FUNC) &delQConstrs,               4},
+    {"getQConstr",                (DL_FUNC) &getQConstr,                3},
+    {"addIndConstr",              (DL_FUNC) &addIndConstr,             10},
+    {"delIndConstrs",             (DL_FUNC) &delIndConstrs,             4},
+    {"getIndConstr",              (DL_FUNC) &getIndConstr,              3},
 
 /* -------------------------------------------------------------------------- */
 /* check                                                                      */

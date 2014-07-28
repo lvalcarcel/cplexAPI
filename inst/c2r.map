@@ -7,8 +7,10 @@
 CPXaddchannel                <- cplexAPI::addChannelCPLEX
 CPXaddcols                   <- cplexAPI::addColsCPLEX
 CPXaddfpdest                 <- cplexAPI::addFpDestCPLEX
+CPXaddindconstr              <- cplexAPI::addIndConstrCPLEX
 CPXaddmipstarts              <- cplexAPI::addMIPstartsCPLEX
 CPXaddrows                   <- cplexAPI::addRowsCPLEX
+CPXaddqconstr                <- cplexAPI::addQConstrCPLEX
 CPXbaropt                    <- cplexAPI::baroptCPLEX
 CPXmbasewrite                <- cplexAPI::baseWriteCPLEX
 CPXbasicpresolve             <- cplexAPI::basicPresolveCPLEX
@@ -56,8 +58,10 @@ CPXcopystart                 <- cplexAPI::copyStartCPLEX
 CPXdelchannel                <- cplexAPI::delChannelCPLEX
 CPXdelcols                   <- cplexAPI::delColsCPLEX
 CPXdelfpdest                 <- cplexAPI::delFpDestCPLEX
+CPXdelindconstrs             <- cplexAPI::delIndConstrsCPLEX
 CPXdelmipstarts              <- cplexAPI::delMIPstartsCPLEX
 CPXdelnames                  <- cplexAPI::delNamesCPLEX
+CPXdelqconstrs               <- cplexAPI::delQConstrsCPLEX
 CPXfreeprob                  <- cplexAPI::delProbCPLEX
 CPXdelrows                   <- cplexAPI::delRowsCPLEX
 CPXdelsetcols                <- cplexAPI::delSetColsCPLEX
@@ -90,6 +94,7 @@ CPXgetdsbcnt                 <- cplexAPI::getDbsCntCPLEX
 CPXgetdj                     <- cplexAPI::getDjCPLEX
 CPXgeterrorstring            <- cplexAPI::getErrorStrCPLEX
 CPXgetgrad                   <- cplexAPI::getGradCPLEX
+CPXgetindconstr              <- cplexAPI::getIndConstrCPLEX
 CPXinfodblparam              <- cplexAPI::getInfoDblParmCPLEX
 CPXinfointparam              <- cplexAPI::getInfoIntParmCPLEX
 CPXinfolongparam             <- cplexAPI::getInfoLongParmCPLEX
@@ -126,6 +131,7 @@ CPXgetprestat                <- cplexAPI::getPreStatCPLEX
 CPXgetprobname               <- cplexAPI::getProbNameCPLEX
 CPXgetprobtype               <- cplexAPI::getProbTypeCPLEX
 CPXgetx                      <- cplexAPI::getProbVarCPLEX
+CPXqindconstr                <- cplexAPI::getQConstrCPLEX
 CPXgetqpcoef                 <- cplexAPI::getQPcoefCPLEX
 CPXgetquad                   <- cplexAPI::getQuadCPLEX
 CPXgetredlp                  <- cplexAPI::getRedLpCPLEX

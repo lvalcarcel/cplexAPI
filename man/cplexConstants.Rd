@@ -489,7 +489,174 @@
 \alias{CPXPROB_NODEQP}
 \alias{CPXPROB_QCP}
 \alias{CPXPROB_QP}
-
+\alias{CPX_PARAM_CALCQCPDUALS}
+\alias{CPX_PARAM_LANDPCUTS}
+\alias{CPX_PARAM_RAMPUPDETTILIM}
+\alias{CPX_PARAM_RAMPUPDURATION}
+\alias{CPX_PARAM_RAMPUPTILIM}
+\alias{CPX_SOLUTIONTARGET_OPTIMALGLOBAL}
+\alias{CPXPARAM_Advance}
+\alias{CPXPARAM_Barrier_Algorithm}
+\alias{CPXPARAM_Barrier_ColNonzeros}
+\alias{CPXPARAM_Barrier_ConvergeTol}
+\alias{CPXPARAM_Barrier_Crossover}
+\alias{CPXPARAM_Barrier_Display}
+\alias{CPXPARAM_Barrier_Limits_Corrections}
+\alias{CPXPARAM_Barrier_Limits_Growth}
+\alias{CPXPARAM_Barrier_Limits_Iteration}
+\alias{CPXPARAM_Barrier_Limits_ObjRange}
+\alias{CPXPARAM_Barrier_Ordering}
+\alias{CPXPARAM_Barrier_QCPConvergeTol}
+\alias{CPXPARAM_Barrier_StartAlg}
+\alias{CPXPARAM_ClockType}
+\alias{CPXPARAM_Conflict_Display}
+\alias{CPXPARAM_DetTimeLimit}
+\alias{CPXPARAM_DistMIP_Rampup_DetTimeLimit}
+\alias{CPXPARAM_DistMIP_Rampup_Duration}
+\alias{CPXPARAM_DistMIP_Rampup_TimeLimit}
+\alias{CPXPARAM_Emphasis_Memory}
+\alias{CPXPARAM_Emphasis_MIP}
+\alias{CPXPARAM_Emphasis_Numerical}
+\alias{CPXPARAM_Feasopt_Mode}
+\alias{CPXPARAM_Feasopt_Tolerance}
+\alias{CPXPARAM_LPMethod}
+\alias{CPXPARAM_MIP_Cuts_Cliques}
+\alias{CPXPARAM_MIP_Cuts_Covers}
+\alias{CPXPARAM_MIP_Cuts_Disjunctive}
+\alias{CPXPARAM_MIP_Cuts_FlowCovers}
+\alias{CPXPARAM_MIP_Cuts_Gomory}
+\alias{CPXPARAM_MIP_Cuts_GUBCovers}
+\alias{CPXPARAM_MIP_Cuts_Implied}
+\alias{CPXPARAM_MIP_Cuts_LiftProj}
+\alias{CPXPARAM_MIP_Cuts_MCFCut}
+\alias{CPXPARAM_MIP_Cuts_MIRCut}
+\alias{CPXPARAM_MIP_Cuts_PathCut}
+\alias{CPXPARAM_MIP_Cuts_ZeroHalfCut}
+\alias{CPXPARAM_MIP_Display}
+\alias{CPXPARAM_MIP_Interval}
+\alias{CPXPARAM_MIP_Limits_AggForCut}
+\alias{CPXPARAM_MIP_Limits_AuxRootThreads}
+\alias{CPXPARAM_MIP_Limits_CutPasses}
+\alias{CPXPARAM_MIP_Limits_CutsFactor}
+\alias{CPXPARAM_MIP_Limits_EachCutLimit}
+\alias{CPXPARAM_MIP_Limits_GomoryCand}
+\alias{CPXPARAM_MIP_Limits_GomoryPass}
+\alias{CPXPARAM_MIP_Limits_Nodes}
+\alias{CPXPARAM_MIP_Limits_PolishTime}
+\alias{CPXPARAM_MIP_Limits_Populate}
+\alias{CPXPARAM_MIP_Limits_ProbeDetTime}
+\alias{CPXPARAM_MIP_Limits_ProbeTime}
+\alias{CPXPARAM_MIP_Limits_RepairTries}
+\alias{CPXPARAM_MIP_Limits_Solutions}
+\alias{CPXPARAM_MIP_Limits_StrongCand}
+\alias{CPXPARAM_MIP_Limits_StrongIt}
+\alias{CPXPARAM_MIP_Limits_SubMIPNodeLim}
+\alias{CPXPARAM_MIP_Limits_TreeMemory}
+\alias{CPXPARAM_MIP_OrderType}
+\alias{CPXPARAM_MIP_PolishAfter_AbsMIPGap}
+\alias{CPXPARAM_MIP_PolishAfter_DetTime}
+\alias{CPXPARAM_MIP_PolishAfter_MIPGap}
+\alias{CPXPARAM_MIP_PolishAfter_Nodes}
+\alias{CPXPARAM_MIP_PolishAfter_Solutions}
+\alias{CPXPARAM_MIP_PolishAfter_Time}
+\alias{CPXPARAM_MIP_Pool_AbsGap}
+\alias{CPXPARAM_MIP_Pool_Capacity}
+\alias{CPXPARAM_MIP_Pool_Intensity}
+\alias{CPXPARAM_MIP_Pool_RelGap}
+\alias{CPXPARAM_MIP_Pool_Replace}
+\alias{CPXPARAM_MIP_Strategy_Backtrack}
+\alias{CPXPARAM_MIP_Strategy_BBInterval}
+\alias{CPXPARAM_MIP_Strategy_Branch}
+\alias{CPXPARAM_MIP_Strategy_CallbackReducedLP}
+\alias{CPXPARAM_MIP_Strategy_Dive}
+\alias{CPXPARAM_MIP_Strategy_File}
+\alias{CPXPARAM_MIP_Strategy_FPHeur}
+\alias{CPXPARAM_MIP_Strategy_HeuristicFreq}
+\alias{CPXPARAM_MIP_Strategy_KappaStats}
+\alias{CPXPARAM_MIP_Strategy_LBHeur}
+\alias{CPXPARAM_MIP_Strategy_MIQCPStrat}
+\alias{CPXPARAM_MIP_Strategy_NodeSelect}
+\alias{CPXPARAM_MIP_Strategy_Order}
+\alias{CPXPARAM_MIP_Strategy_PresolveNode}
+\alias{CPXPARAM_MIP_Strategy_Probe}
+\alias{CPXPARAM_MIP_Strategy_RINSHeur}
+\alias{CPXPARAM_MIP_Strategy_Search}
+\alias{CPXPARAM_MIP_Strategy_StartAlgorithm}
+\alias{CPXPARAM_MIP_Strategy_SubAlgorithm}
+\alias{CPXPARAM_MIP_Strategy_VariableSelect}
+\alias{CPXPARAM_MIP_Tolerances_AbsMIPGap}
+\alias{CPXPARAM_MIP_Tolerances_Integrality}
+\alias{CPXPARAM_MIP_Tolerances_LowerCutoff}
+\alias{CPXPARAM_MIP_Tolerances_MIPGap}
+\alias{CPXPARAM_MIP_Tolerances_ObjDifference}
+\alias{CPXPARAM_MIP_Tolerances_RelObjDifference}
+\alias{CPXPARAM_MIP_Tolerances_UpperCutoff}
+\alias{CPXPARAM_Network_Display}
+\alias{CPXPARAM_Network_Iterations}
+\alias{CPXPARAM_Network_NetFind}
+\alias{CPXPARAM_Network_Pricing}
+\alias{CPXPARAM_Network_Tolerances_Feasibility}
+\alias{CPXPARAM_Network_Tolerances_Optimality}
+\alias{CPXPARAM_Output_CloneLog}
+\alias{CPXPARAM_Output_IntSolFilePrefix}
+\alias{CPXPARAM_Output_MPSLong}
+\alias{CPXPARAM_Output_WriteLevel}
+\alias{CPXPARAM_Parallel}
+\alias{CPXPARAM_Preprocessing_Aggregator}
+\alias{CPXPARAM_Preprocessing_BoundStrength}
+\alias{CPXPARAM_Preprocessing_CoeffReduce}
+\alias{CPXPARAM_Preprocessing_Dependency}
+\alias{CPXPARAM_Preprocessing_Dual}
+\alias{CPXPARAM_Preprocessing_Fill}
+\alias{CPXPARAM_Preprocessing_Linear}
+\alias{CPXPARAM_Preprocessing_NumPass}
+\alias{CPXPARAM_Preprocessing_Presolve}
+\alias{CPXPARAM_Preprocessing_QCPDuals}
+\alias{CPXPARAM_Preprocessing_QPMakePSD}
+\alias{CPXPARAM_Preprocessing_Reduce}
+\alias{CPXPARAM_Preprocessing_Relax}
+\alias{CPXPARAM_Preprocessing_RepeatPresolve}
+\alias{CPXPARAM_Preprocessing_Symmetry}
+\alias{CPXPARAM_QPMethod}
+\alias{CPXPARAM_RandomSeed}
+\alias{CPXPARAM_Read_APIEncoding}
+\alias{CPXPARAM_Read_Constraints}
+\alias{CPXPARAM_Read_DataCheck}
+\alias{CPXPARAM_Read_FileEncoding}
+\alias{CPXPARAM_Read_Nonzeros}
+\alias{CPXPARAM_Read_QPNonzeros}
+\alias{CPXPARAM_Read_Scale}
+\alias{CPXPARAM_Read_Variables}
+\alias{CPXPARAM_ScreenOutput}
+\alias{CPXPARAM_Sifting_Algorithm}
+\alias{CPXPARAM_Sifting_Display}
+\alias{CPXPARAM_Sifting_Iterations}
+\alias{CPXPARAM_Simplex_Crash}
+\alias{CPXPARAM_Simplex_DGradient}
+\alias{CPXPARAM_Simplex_Display}
+\alias{CPXPARAM_Simplex_Limits_Iterations}
+\alias{CPXPARAM_Simplex_Limits_LowerObj}
+\alias{CPXPARAM_Simplex_Limits_Perturbation}
+\alias{CPXPARAM_Simplex_Limits_Singularity}
+\alias{CPXPARAM_Simplex_Limits_UpperObj}
+\alias{CPXPARAM_Simplex_Perturbation_Constant}
+\alias{CPXPARAM_Simplex_Perturbation_Indicator}
+\alias{CPXPARAM_Simplex_PGradient}
+\alias{CPXPARAM_Simplex_Pricing}
+\alias{CPXPARAM_Simplex_Refactor}
+\alias{CPXPARAM_Simplex_Tolerances_Feasibility}
+\alias{CPXPARAM_Simplex_Tolerances_Markowitz}
+\alias{CPXPARAM_Simplex_Tolerances_Optimality}
+\alias{CPXPARAM_SolutionTarget}
+\alias{CPXPARAM_Threads}
+\alias{CPXPARAM_TimeLimit}
+\alias{CPXPARAM_Tune_DetTimeLimit}
+\alias{CPXPARAM_Tune_Display}
+\alias{CPXPARAM_Tune_Measure}
+\alias{CPXPARAM_Tune_Repeat}
+\alias{CPXPARAM_Tune_TimeLimit}
+\alias{CPXPARAM_WorkDir}
+\alias{CPXPARAM_WorkMem}
 
 \title{
   Constants, Parameters, Return and Status Codes of IBM ILOG CPLEX
@@ -638,6 +805,7 @@
     \code{CPX_SOLUTIONTARGET_AUTO}          \tab \code{0} \cr
     \code{CPX_SOLUTIONTARGET_OPTIMALCONVEX} \tab \code{1} \cr
     \code{CPX_SOLUTIONTARGET_FIRSTORDER}    \tab \code{2} \cr
+    \code{CPX_SOLUTIONTARGET_OPTIMALGLOBAL} \tab \code{3} \cr
   }
 }
 
@@ -1187,6 +1355,10 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
     \code{CPX_PARAM_INTSOLFILEPREFIX}    \tab \code{2143} \cr
     \code{CPX_PARAM_PROBEDETTIME}        \tab \code{2150} \cr
     \code{CPX_PARAM_POLISHAFTERDETTIME}  \tab \code{2151} \cr
+    \code{CPX_PARAM_LANDPCUTS}           \tab \code{2152} \cr
+    \code{CPX_PARAM_RAMPUPDURATION}      \tab \code{2163} \cr
+    \code{CPX_PARAM_RAMPUPDETTILIM}      \tab \code{2164} \cr
+    \code{CPX_PARAM_RAMPUPTILIM}         \tab \code{2165} \cr
   }
 }
 
@@ -1277,6 +1449,12 @@ Types \code{4}, \code{9}, and \code{12} are internal, the others are for users.
   }
 }
 
+\section{Specify how to calculate duals for QCPs}{
+  \tabular{ll}{
+    \code{CPX_PARAM_CALCQCPDUALS}        \tab \code{4003} \cr
+  }
+}
+
 \section{presolve}{
   \tabular{ll}{
     \code{CPX_PARAM_QPMAKEPSDIND}        \tab \code{4010} \cr
@@ -1290,6 +1468,176 @@ Callable library miscellaneous routines
   \tabular{ll}{
     \code{CPXERR_NEGATIVE_SURPLUS}       \tab \code{1207} \cr
     \code{CPXERR_NO_SENSIT}              \tab \code{1260} \cr
+  }
+}
+
+
+%------------------------------------------------------------------------------
+\section{new parameter names introduced in IBM ILOG CPLEX version 12.6}{
+Callable library miscellaneous routines
+  \tabular{ll}{
+    \code{CPXPARAM_Advance}                         \tab \code{1001} \cr
+    \code{CPXPARAM_Barrier_Algorithm}               \tab \code{3007} \cr
+    \code{CPXPARAM_Barrier_ColNonzeros}             \tab \code{3009} \cr
+    \code{CPXPARAM_Barrier_ConvergeTol}             \tab \code{3002} \cr
+    \code{CPXPARAM_Barrier_Crossover}               \tab \code{3018} \cr
+    \code{CPXPARAM_Barrier_Display}                 \tab \code{3010} \cr
+    \code{CPXPARAM_Barrier_Limits_Corrections}      \tab \code{3013} \cr
+    \code{CPXPARAM_Barrier_Limits_Growth}           \tab \code{3003} \cr
+    \code{CPXPARAM_Barrier_Limits_Iteration}        \tab \code{3012} \cr
+    \code{CPXPARAM_Barrier_Limits_ObjRange}         \tab \code{3004} \cr
+    \code{CPXPARAM_Barrier_Ordering}                \tab \code{3014} \cr
+    \code{CPXPARAM_Barrier_QCPConvergeTol}          \tab \code{3020} \cr
+    \code{CPXPARAM_Barrier_StartAlg}                \tab \code{3017} \cr
+    \code{CPXPARAM_ClockType}                       \tab \code{1006} \cr
+    \code{CPXPARAM_Conflict_Display}                \tab \code{1074} \cr
+    \code{CPXPARAM_DetTimeLimit}                    \tab \code{1127} \cr
+    \code{CPXPARAM_DistMIP_Rampup_DetTimeLimit}     \tab \code{2164} \cr
+    \code{CPXPARAM_DistMIP_Rampup_Duration}         \tab \code{2163} \cr
+    \code{CPXPARAM_DistMIP_Rampup_TimeLimit}        \tab \code{2165} \cr
+    \code{CPXPARAM_Emphasis_Memory}                 \tab \code{1082} \cr
+    \code{CPXPARAM_Emphasis_MIP}                    \tab \code{2058} \cr
+    \code{CPXPARAM_Emphasis_Numerical}              \tab \code{1083} \cr
+    \code{CPXPARAM_Feasopt_Mode}                    \tab \code{1084} \cr
+    \code{CPXPARAM_Feasopt_Tolerance}               \tab \code{2073} \cr
+    \code{CPXPARAM_LPMethod}                        \tab \code{1062} \cr
+    \code{CPXPARAM_MIP_Cuts_Cliques}                \tab \code{2003} \cr
+    \code{CPXPARAM_MIP_Cuts_Covers}                 \tab \code{2005} \cr
+    \code{CPXPARAM_MIP_Cuts_Disjunctive}            \tab \code{2053} \cr
+    \code{CPXPARAM_MIP_Cuts_FlowCovers}             \tab \code{2040} \cr
+    \code{CPXPARAM_MIP_Cuts_Gomory}                 \tab \code{2049} \cr
+    \code{CPXPARAM_MIP_Cuts_GUBCovers}              \tab \code{2044} \cr
+    \code{CPXPARAM_MIP_Cuts_Implied}                \tab \code{2041} \cr
+    \code{CPXPARAM_MIP_Cuts_LiftProj}               \tab \code{2152} \cr
+    \code{CPXPARAM_MIP_Cuts_MCFCut}                 \tab \code{2134} \cr
+    \code{CPXPARAM_MIP_Cuts_MIRCut}                 \tab \code{2052} \cr
+    \code{CPXPARAM_MIP_Cuts_PathCut}                \tab \code{2051} \cr
+    \code{CPXPARAM_MIP_Cuts_ZeroHalfCut}            \tab \code{2111} \cr
+    \code{CPXPARAM_MIP_Display}                     \tab \code{2012} \cr
+    \code{CPXPARAM_MIP_Interval}                    \tab \code{2013} \cr
+    \code{CPXPARAM_MIP_Limits_AggForCut}            \tab \code{2054} \cr
+    \code{CPXPARAM_MIP_Limits_AuxRootThreads}       \tab \code{2139} \cr
+    \code{CPXPARAM_MIP_Limits_CutPasses}            \tab \code{2056} \cr
+    \code{CPXPARAM_MIP_Limits_CutsFactor}           \tab \code{2033} \cr
+    \code{CPXPARAM_MIP_Limits_EachCutLimit}         \tab \code{2102} \cr
+    \code{CPXPARAM_MIP_Limits_GomoryCand}           \tab \code{2048} \cr
+    \code{CPXPARAM_MIP_Limits_GomoryPass}           \tab \code{2050} \cr
+    \code{CPXPARAM_MIP_Limits_Nodes}                \tab \code{2017} \cr
+    \code{CPXPARAM_MIP_Limits_PolishTime}           \tab \code{2066} \cr
+    \code{CPXPARAM_MIP_Limits_Populate}             \tab \code{2108} \cr
+    \code{CPXPARAM_MIP_Limits_ProbeDetTime}         \tab \code{2150} \cr
+    \code{CPXPARAM_MIP_Limits_ProbeTime}            \tab \code{2065} \cr
+    \code{CPXPARAM_MIP_Limits_RepairTries}          \tab \code{2067} \cr
+    \code{CPXPARAM_MIP_Limits_Solutions}            \tab \code{2015} \cr
+    \code{CPXPARAM_MIP_Limits_StrongCand}           \tab \code{2045} \cr
+    \code{CPXPARAM_MIP_Limits_StrongIt}             \tab \code{2046} \cr
+    \code{CPXPARAM_MIP_Limits_SubMIPNodeLim}        \tab \code{2062} \cr
+    \code{CPXPARAM_MIP_Limits_TreeMemory}           \tab \code{2027} \cr
+    \code{CPXPARAM_MIP_OrderType}                   \tab \code{2032} \cr
+    \code{CPXPARAM_MIP_PolishAfter_AbsMIPGap}       \tab \code{2126} \cr
+    \code{CPXPARAM_MIP_PolishAfter_DetTime}         \tab \code{2151} \cr
+    \code{CPXPARAM_MIP_PolishAfter_MIPGap}          \tab \code{2127} \cr
+    \code{CPXPARAM_MIP_PolishAfter_Nodes}           \tab \code{2128} \cr
+    \code{CPXPARAM_MIP_PolishAfter_Solutions}       \tab \code{2129} \cr
+    \code{CPXPARAM_MIP_PolishAfter_Time}            \tab \code{2130} \cr
+    \code{CPXPARAM_MIP_Pool_AbsGap}                 \tab \code{2106} \cr
+    \code{CPXPARAM_MIP_Pool_Capacity}               \tab \code{2103} \cr
+    \code{CPXPARAM_MIP_Pool_Intensity}              \tab \code{2107} \cr
+    \code{CPXPARAM_MIP_Pool_RelGap}                 \tab \code{2105} \cr
+    \code{CPXPARAM_MIP_Pool_Replace}                \tab \code{2104} \cr
+    \code{CPXPARAM_MIP_Strategy_Backtrack}          \tab \code{2002} \cr
+    \code{CPXPARAM_MIP_Strategy_BBInterval}         \tab \code{2039} \cr
+    \code{CPXPARAM_MIP_Strategy_Branch}             \tab \code{2001} \cr
+    \code{CPXPARAM_MIP_Strategy_CallbackReducedLP}  \tab \code{2055} \cr
+    \code{CPXPARAM_MIP_Strategy_Dive}               \tab \code{2060} \cr
+    \code{CPXPARAM_MIP_Strategy_File}               \tab \code{2016} \cr
+    \code{CPXPARAM_MIP_Strategy_FPHeur}             \tab \code{2098} \cr
+    \code{CPXPARAM_MIP_Strategy_HeuristicFreq}      \tab \code{2031} \cr
+    \code{CPXPARAM_MIP_Strategy_KappaStats}         \tab \code{2137} \cr
+    \code{CPXPARAM_MIP_Strategy_LBHeur}             \tab \code{2063} \cr
+    \code{CPXPARAM_MIP_Strategy_MIQCPStrat}         \tab \code{2110} \cr
+    \code{CPXPARAM_MIP_Strategy_NodeSelect}         \tab \code{2018} \cr
+    \code{CPXPARAM_MIP_Strategy_Order}              \tab \code{2020} \cr
+    \code{CPXPARAM_MIP_Strategy_PresolveNode}       \tab \code{2037} \cr
+    \code{CPXPARAM_MIP_Strategy_Probe}              \tab \code{2042} \cr
+    \code{CPXPARAM_MIP_Strategy_RINSHeur}           \tab \code{2061} \cr
+    \code{CPXPARAM_MIP_Strategy_Search}             \tab \code{2109} \cr
+    \code{CPXPARAM_MIP_Strategy_StartAlgorithm}     \tab \code{2025} \cr
+    \code{CPXPARAM_MIP_Strategy_SubAlgorithm}       \tab \code{2026} \cr
+    \code{CPXPARAM_MIP_Strategy_VariableSelect}     \tab \code{2028} \cr
+    \code{CPXPARAM_MIP_Tolerances_AbsMIPGap}        \tab \code{2008} \cr
+    \code{CPXPARAM_MIP_Tolerances_Integrality}      \tab \code{2010} \cr
+    \code{CPXPARAM_MIP_Tolerances_LowerCutoff}      \tab \code{2006} \cr
+    \code{CPXPARAM_MIP_Tolerances_MIPGap}           \tab \code{2009} \cr
+    \code{CPXPARAM_MIP_Tolerances_ObjDifference}    \tab \code{2019} \cr
+    \code{CPXPARAM_MIP_Tolerances_RelObjDifference} \tab \code{2022} \cr
+    \code{CPXPARAM_MIP_Tolerances_UpperCutoff}      \tab \code{2007} \cr
+    \code{CPXPARAM_Network_Display}                 \tab \code{5005} \cr
+    \code{CPXPARAM_Network_Iterations}              \tab \code{5001} \cr
+    \code{CPXPARAM_Network_NetFind}                 \tab \code{1022} \cr
+    \code{CPXPARAM_Network_Pricing}                 \tab \code{5004} \cr
+    \code{CPXPARAM_Network_Tolerances_Feasibility}  \tab \code{5003} \cr
+    \code{CPXPARAM_Network_Tolerances_Optimality}   \tab \code{5002} \cr
+    \code{CPXPARAM_Output_CloneLog}                 \tab \code{1132} \cr
+    \code{CPXPARAM_Output_IntSolFilePrefix}         \tab \code{2143} \cr
+    \code{CPXPARAM_Output_MPSLong}                  \tab \code{1081} \cr
+    \code{CPXPARAM_Output_WriteLevel}               \tab \code{1114} \cr
+    \code{CPXPARAM_Parallel}                        \tab \code{1109} \cr
+    \code{CPXPARAM_Preprocessing_Aggregator}        \tab \code{1003} \cr
+    \code{CPXPARAM_Preprocessing_BoundStrength}     \tab \code{2029} \cr
+    \code{CPXPARAM_Preprocessing_CoeffReduce}       \tab \code{2004} \cr
+    \code{CPXPARAM_Preprocessing_Dependency}        \tab \code{1008} \cr
+    \code{CPXPARAM_Preprocessing_Dual}              \tab \code{1044} \cr
+    \code{CPXPARAM_Preprocessing_Fill}              \tab \code{1002} \cr
+    \code{CPXPARAM_Preprocessing_Linear}            \tab \code{1058} \cr
+    \code{CPXPARAM_Preprocessing_NumPass}           \tab \code{1052} \cr
+    \code{CPXPARAM_Preprocessing_Presolve}          \tab \code{1030} \cr
+    \code{CPXPARAM_Preprocessing_QCPDuals}          \tab \code{4003} \cr
+    \code{CPXPARAM_Preprocessing_QPMakePSD}         \tab \code{4010} \cr
+    \code{CPXPARAM_Preprocessing_Reduce}            \tab \code{1057} \cr
+    \code{CPXPARAM_Preprocessing_Relax}             \tab \code{2034} \cr
+    \code{CPXPARAM_Preprocessing_RepeatPresolve}    \tab \code{2064} \cr
+    \code{CPXPARAM_Preprocessing_Symmetry}          \tab \code{2059} \cr
+    \code{CPXPARAM_QPMethod}                        \tab \code{1063} \cr
+    \code{CPXPARAM_RandomSeed}                      \tab \code{1124} \cr
+    \code{CPXPARAM_Read_APIEncoding}                \tab \code{1130} \cr
+    \code{CPXPARAM_Read_Constraints}                \tab \code{1021} \cr
+    \code{CPXPARAM_Read_DataCheck}                  \tab \code{1056} \cr
+    \code{CPXPARAM_Read_FileEncoding}               \tab \code{1129} \cr
+    \code{CPXPARAM_Read_Nonzeros}                   \tab \code{1024} \cr
+    \code{CPXPARAM_Read_QPNonzeros}                 \tab \code{4001} \cr
+    \code{CPXPARAM_Read_Scale}                      \tab \code{1034} \cr
+    \code{CPXPARAM_Read_Variables}                  \tab \code{1023} \cr
+    \code{CPXPARAM_ScreenOutput}                    \tab \code{1035} \cr
+    \code{CPXPARAM_Sifting_Algorithm}               \tab \code{1077} \cr
+    \code{CPXPARAM_Sifting_Display}                 \tab \code{1076} \cr
+    \code{CPXPARAM_Sifting_Iterations}              \tab \code{1078} \cr
+    \code{CPXPARAM_Simplex_Crash}                   \tab \code{1007} \cr
+    \code{CPXPARAM_Simplex_DGradient}               \tab \code{1009} \cr
+    \code{CPXPARAM_Simplex_Display}                 \tab \code{1019} \cr
+    \code{CPXPARAM_Simplex_Limits_Iterations}       \tab \code{1020} \cr
+    \code{CPXPARAM_Simplex_Limits_LowerObj}         \tab \code{1025} \cr
+    \code{CPXPARAM_Simplex_Limits_Perturbation}     \tab \code{1028} \cr
+    \code{CPXPARAM_Simplex_Limits_Singularity}      \tab \code{1037} \cr
+    \code{CPXPARAM_Simplex_Limits_UpperObj}         \tab \code{1026} \cr
+    \code{CPXPARAM_Simplex_Perturbation_Constant}   \tab \code{1015} \cr
+    \code{CPXPARAM_Simplex_Perturbation_Indicator}  \tab \code{1027} \cr
+    \code{CPXPARAM_Simplex_PGradient}               \tab \code{1029} \cr
+    \code{CPXPARAM_Simplex_Pricing}                 \tab \code{1010} \cr
+    \code{CPXPARAM_Simplex_Refactor}                \tab \code{1031} \cr
+    \code{CPXPARAM_Simplex_Tolerances_Feasibility}  \tab \code{1016} \cr
+    \code{CPXPARAM_Simplex_Tolerances_Markowitz}    \tab \code{1013} \cr
+    \code{CPXPARAM_Simplex_Tolerances_Optimality}   \tab \code{1014} \cr
+    \code{CPXPARAM_SolutionTarget}                  \tab \code{1131} \cr
+    \code{CPXPARAM_Threads}                         \tab \code{1067} \cr
+    \code{CPXPARAM_TimeLimit}                       \tab \code{1039} \cr
+    \code{CPXPARAM_Tune_DetTimeLimit}               \tab \code{1139} \cr
+    \code{CPXPARAM_Tune_Display}                    \tab \code{1113} \cr
+    \code{CPXPARAM_Tune_Measure}                    \tab \code{1110} \cr
+    \code{CPXPARAM_Tune_Repeat}                     \tab \code{1111} \cr
+    \code{CPXPARAM_Tune_TimeLimit}                  \tab \code{1112} \cr
+    \code{CPXPARAM_WorkDir}                         \tab \code{1064} \cr
+    \code{CPXPARAM_WorkMem}                         \tab \code{1065} \cr
   }
 }
 

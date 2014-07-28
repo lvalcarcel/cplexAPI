@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplexAPI.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1 to 12.6.
 #
-#  Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+#  Copyright (C) 2011-2014 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -3063,3 +3063,138 @@ readCopyOrderCPLEX <- function(env, lp, fname) {
 }
 
 
+#------------------------------------------------------------------------------#
+
+addQConstrCPLEX <- function(env, lp, lzn, qzn, rhs, sense,
+                            lind = NULL, lval = NULL,
+                            qrow, qcol, qval, qname = NULL) {
+
+    stopifnot(sense %in% c("L", "G"))
+
+    if (is.null(lind)) {
+        Clind <- as.null(lind)
+    }
+    else {
+        Clind <- as.integer(lind)
+    }
+
+    if (is.null(lval)) {
+        Clval <- as.null(lval)
+    }
+    else {
+        Clval <- as.numeric(lval)
+    }
+
+    if (is.null(qname)) {
+        Cqname <- as.null(qname)
+    }
+    else {
+        Cqname <- as.character(qname)
+    }
+
+    status <- .Call("addQConstr", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.integer(lzn),
+                    as.integer(qzn),
+                    as.numeric(rhs),
+                    as.character(paste(sense, collapse = "")),
+                    Clind,
+                    Clval,
+                    as.integer(qrow),
+                    as.integer(qcol),
+                    as.numeric(qval),
+                    Cqname
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+delQConstrsCPLEX <- function(env, lp, begin, end) {
+
+    dq <- .Call("delQConstrs", PACKAGE = "cplexAPI",
+                cplexPointer(env),
+                cplexPointer(lp),
+                as.integer(begin),
+                as.integer(end)
+            )
+
+    return(cplexError(dq))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getQConstrCPLEX <- function(env, lp, which) {
+
+    qc <- .Call("getQConstr", PACKAGE = "cplexAPI",
+                cplexPointer(env),
+                cplexPointer(lp),
+                as.integer(which)
+            )
+
+    return(cplexError(qc))
+}
+
+
+#------------------------------------------------------------------------------#
+
+addIndConstrCPLEX <- function(env, lp, indvar, complemented, nzcnt, rhs,
+                              sense, linind, linval, indname = NULL) {
+
+    if (is.null(indname)) {
+        Cindname <- as.null(indname)
+    }
+    else {
+        Cindname <- as.character(indname)
+    }
+
+    stopifnot(sense %in% c("L", "G", "E"))
+
+    status <- .Call("addIndConstr", PACKAGE = "cplexAPI",
+                    cplexPointer(env),
+                    cplexPointer(lp),
+                    as.integer(indvar),
+                    as.integer(complemented),
+                    as.integer(nzcnt),
+                    as.numeric(rhs),
+                    as.character(paste(sense, collapse = "")),
+                    as.integer(linind),
+                    as.numeric(linval),
+                    Cindname
+              )
+
+    return(status)
+}
+
+
+#------------------------------------------------------------------------------#
+
+delIndConstrsCPLEX <- function(env, lp, begin, end) {
+
+    di <- .Call("delIndConstrs", PACKAGE = "cplexAPI",
+                cplexPointer(env),
+                cplexPointer(lp),
+                as.integer(begin),
+                as.integer(end)
+            )
+
+    return(cplexError(di))
+}
+
+
+#------------------------------------------------------------------------------#
+
+getIndConstrCPLEX <- function(env, lp, which) {
+
+    ic <- .Call("getIndConstr", PACKAGE = "cplexAPI",
+                cplexPointer(env),
+                cplexPointer(lp),
+                as.integer(which)
+            )
+
+    return(cplexError(ic))
+}

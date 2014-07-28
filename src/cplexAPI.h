@@ -1,7 +1,7 @@
 /* cplexAPI.h
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1 to 12.6.
 
-   Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+   Copyright (C) 2011-2014 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -677,3 +677,26 @@ SEXP ordWrite(SEXP env, SEXP lp, SEXP fname);
 
 /* read ORD file and copy priority order information into a problem object */
 SEXP readCopyOrder(SEXP env, SEXP lp, SEXP fname);
+
+/* add quadratic constraint to a specified CPLEX problem object */
+SEXP addQConstr(SEXP env, SEXP lp, SEXP lzn, SEXP qzn,
+                SEXP rhs, SEXP sense,
+                SEXP lind, SEXP lval,
+                SEXP qrow, SEXP qcol, SEXP qval, SEXP qname);
+
+/* delete a range of quadratic constraints */
+SEXP delQConstrs(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* access a quadratic constraint on the variables of a problem object */
+SEXP getQConstr(SEXP env, SEXP lp, SEXP which);
+
+/* add an indicator constraint to the specified problem object */
+SEXP addIndConstr(SEXP env, SEXP lp, SEXP indvar, SEXP complemented,
+                  SEXP nzcnt, SEXP rhs, SEXP sense, SEXP linind, SEXP linval,
+                  SEXP indname);
+
+/* delete a range of indicator constraints */
+SEXP delIndConstrs(SEXP env, SEXP lp, SEXP begin, SEXP end);
+
+/* access an indicator constraint on the variables of a problem object */
+SEXP getIndConstr(SEXP env, SEXP lp, SEXP which);

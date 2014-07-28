@@ -49,8 +49,8 @@
 
 \section{Introduction}
 The package \pkgname{} provides a low level interface to the C~API of
-\prgname{\cplex}\footnote{\cplex{} version $\geq 12.1$ from the IBM Academic
-Ini\-tia\-tive
+\prgname{\cplex}\footnote{\cplex{} version $\geq 12.1$ from
+the IBM Academic Ini\-tia\-tive
 
 \url{https://www.ibm.com/developerworks/university/academicinitiative/}}.
 The package \pkgname{} requires a working installation of \prgname{\cplex}.

@@ -1,7 +1,7 @@
 /* cplexAPI.c
-   R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
+   R Interface to C API of IBM ILOG CPLEX Version 12.1 to 12.6.
 
-   Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+   Copyright (C) 2011-2014 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
    Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
    All right reserved.
    Email: geliudie@uni-duesseldorf.de
@@ -6213,6 +6213,294 @@ SEXP readCopyOrder(SEXP env, SEXP lp, SEXP fname) {
     }
 
     out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* add quadratic constraint to a specified CPLEX problem object */
+SEXP addQConstr(SEXP env, SEXP lp, SEXP lzn, SEXP qzn,
+                SEXP rhs, SEXP sense,
+                SEXP lind, SEXP lval,
+                SEXP qrow, SEXP qcol, SEXP qval, SEXP qname) {
+
+    SEXP out = R_NilValue;
+
+    /* const char *rsense  = CHAR(STRING_ELT(sense, 0)); */
+    const int *rlind;
+    const double *rlval;
+    const int *rqrow    = INTEGER(qrow);
+    const int *rqcol    = INTEGER(qcol);
+    const double *rqval = REAL(qval);
+    const char *rqname;
+
+
+    if (lind == R_NilValue) {
+        rlind = NULL;
+    }
+    else {
+        rlind = INTEGER(lind);
+    }
+
+    if (lval == R_NilValue) {
+        rlval = NULL;
+    }
+    else {
+        rlval = REAL(lval);
+    }
+
+    if (qname == R_NilValue) {
+        rqname = NULL;
+    }
+    else {
+        rqname = CHAR(STRING_ELT(qname, 0));
+    }
+
+    checkProb(lp);
+    checkEnv(env);
+
+    /* CHAR(STRING_ELT(VECTOR_ELT(sense, 0), 0))[0], */
+    status = CPXaddqconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                           Rf_asInteger(lzn), Rf_asInteger(qzn), Rf_asReal(rhs),
+                           CHAR(STRING_ELT(sense, 0))[0],
+                           rlind, rlval, rqrow, rqcol, rqval, rqname);
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* delete a range of quadratic constraints */
+SEXP delQConstrs(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out = R_NilValue;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXdelqconstrs(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                            Rf_asInteger(begin), Rf_asInteger(end));
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access a quadratic constraint on the variables of a problem object */
+SEXP getQConstr(SEXP env, SEXP lp, SEXP which) {
+
+    SEXP out     = R_NilValue;
+    SEXP listn   = R_NilValue;
+    SEXP linind  = R_NilValue;
+    SEXP linval  = R_NilValue;
+    SEXP quadrow = R_NilValue;
+    SEXP quadcol = R_NilValue;
+    SEXP quadval = R_NilValue;
+    SEXP senseo  = R_NilValue;
+
+    int ret, lsp, qsp, rlc, rqc;
+    double rrhs;
+    char rsense;
+
+    int linsp = 0;
+    int qadsp = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    ret = CPXgetqconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                        &rlc, &rqc, &rrhs, &rsense, NULL, NULL, linsp, &lsp,
+                        NULL, NULL, NULL, qadsp, &qsp, Rf_asInteger(which));
+
+    if (ret == CPXERR_NEGATIVE_SURPLUS) {
+        linsp -= lsp;
+        qadsp -= qsp;
+        PROTECT(linind  = Rf_allocVector(INTSXP,  linsp));
+        PROTECT(linval  = Rf_allocVector(REALSXP, linsp));
+        PROTECT(quadrow = Rf_allocVector(INTSXP,  qadsp));
+        PROTECT(quadcol = Rf_allocVector(INTSXP,  qadsp));
+        PROTECT(quadval = Rf_allocVector(REALSXP, qadsp));
+
+        status = CPXgetqconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                               &rlc, &rqc, &rrhs, &rsense, INTEGER(linind), REAL(linval),
+                               linsp, &lsp, INTEGER(quadrow), INTEGER(quadcol),
+                               REAL(quadval), qadsp, &qsp, Rf_asInteger(which));
+
+        if (status != 0) {
+            status_message(R_ExternalPtrAddr(env), status);
+            out = cpx_error(status);
+        }
+        else {
+            
+            PROTECT(senseo = Rf_allocVector(STRSXP, 1));
+            SET_STRING_ELT(senseo, 0, Rf_mkChar(&rsense));
+            
+            PROTECT(out = Rf_allocVector(VECSXP, 7));
+            SET_VECTOR_ELT(out, 0, Rf_ScalarReal(rrhs));
+            SET_VECTOR_ELT(out, 1, senseo);
+            SET_VECTOR_ELT(out, 2, linind);
+            SET_VECTOR_ELT(out, 3, linval);
+            SET_VECTOR_ELT(out, 4, quadrow);
+            SET_VECTOR_ELT(out, 5, quadcol);
+            SET_VECTOR_ELT(out, 6, quadval);
+
+            PROTECT(listn = Rf_allocVector(STRSXP, 7));
+            SET_STRING_ELT(listn, 0, Rf_mkChar("rhs"));
+            SET_STRING_ELT(listn, 1, Rf_mkChar("sense"));
+            SET_STRING_ELT(listn, 2, Rf_mkChar("linind"));
+            SET_STRING_ELT(listn, 3, Rf_mkChar("linval"));
+            SET_STRING_ELT(listn, 4, Rf_mkChar("quadrow"));
+            SET_STRING_ELT(listn, 5, Rf_mkChar("quadcol"));
+            SET_STRING_ELT(listn, 6, Rf_mkChar("quadval"));
+            Rf_setAttrib(out, R_NamesSymbol, listn);
+
+            UNPROTECT(3);
+        }
+        UNPROTECT(5);
+
+    }
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* add an indicator constraint to the specified problem object */
+SEXP addIndConstr(SEXP env, SEXP lp, SEXP indvar, SEXP complemented,
+                  SEXP nzcnt, SEXP rhs, SEXP sense, SEXP linind, SEXP linval,
+                  SEXP indname) {
+
+    SEXP out = R_NilValue;
+
+    const int *rlinind      = INTEGER(linind);
+    const double *rlinval   = REAL(linval);
+    const char * rindname;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    if (indname == R_NilValue) {
+        rindname = NULL;
+    }
+    else {
+        rindname = CHAR(STRING_ELT(indname, 0));
+    }
+
+    status = CPXaddindconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                             Rf_asInteger(indvar), Rf_asInteger(complemented),
+                             Rf_asInteger(nzcnt), Rf_asReal(rhs),
+                             CHAR(STRING_ELT(sense, 0))[0],
+                             rlinind, rlinval, rindname);
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* delete a range of indicator constraints */
+SEXP delIndConstrs(SEXP env, SEXP lp, SEXP begin, SEXP end) {
+
+    SEXP out = R_NilValue;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    status = CPXdelindconstrs(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                              Rf_asInteger(begin), Rf_asInteger(end));
+
+    if (status != 0) {
+        status_message(R_ExternalPtrAddr(env), status);
+    }
+
+    out = Rf_ScalarInteger(status);
+
+    return out;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* access an indicator constraint on the variables of a problem object */
+SEXP getIndConstr(SEXP env, SEXP lp, SEXP which) {
+
+    SEXP out     = R_NilValue;
+    SEXP listn   = R_NilValue;
+    SEXP linind  = R_NilValue;
+    SEXP linval  = R_NilValue;
+    SEXP senseo  = R_NilValue;
+
+    int ret, sp, ind, comp, nnz;
+    double rrhs;
+    char rsense;
+
+    int linsp = 0;
+
+    checkEnv(env);
+    checkProb(lp);
+
+    ret = CPXgetindconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                          &ind, &comp, &nnz, &rrhs, &rsense, NULL, NULL, linsp,
+                          &sp, Rf_asInteger(which));
+
+    if (ret == CPXERR_NEGATIVE_SURPLUS) {
+        linsp -= sp;
+        PROTECT(linind  = Rf_allocVector(INTSXP,  linsp));
+        PROTECT(linval  = Rf_allocVector(REALSXP, linsp));
+
+        status = CPXgetindconstr(R_ExternalPtrAddr(env), R_ExternalPtrAddr(lp),
+                                 &ind, &comp, &nnz, &rrhs, &rsense,
+                                 INTEGER(linind), REAL(linval), linsp,
+                                 &sp, Rf_asInteger(which));
+
+        if (status != 0) {
+            status_message(R_ExternalPtrAddr(env), status);
+            out = cpx_error(status);
+        }
+        else {
+            
+            PROTECT(senseo = Rf_allocVector(STRSXP, 1));
+            SET_STRING_ELT(senseo, 0, Rf_mkChar(&rsense));
+            
+            PROTECT(out = Rf_allocVector(VECSXP, 6));
+            SET_VECTOR_ELT(out, 0, Rf_ScalarInteger(ind));
+            SET_VECTOR_ELT(out, 1, Rf_ScalarLogical(comp));
+            SET_VECTOR_ELT(out, 2, Rf_ScalarReal(rrhs));
+            SET_VECTOR_ELT(out, 3, senseo);
+            SET_VECTOR_ELT(out, 4, linind);
+            SET_VECTOR_ELT(out, 5, linval);
+
+            PROTECT(listn = Rf_allocVector(STRSXP, 6));
+            SET_STRING_ELT(listn, 0, Rf_mkChar("indvar"));
+            SET_STRING_ELT(listn, 1, Rf_mkChar("complemented"));
+            SET_STRING_ELT(listn, 2, Rf_mkChar("rhs"));
+            SET_STRING_ELT(listn, 3, Rf_mkChar("sense"));
+            SET_STRING_ELT(listn, 4, Rf_mkChar("linind"));
+            SET_STRING_ELT(listn, 5, Rf_mkChar("linval"));
+            Rf_setAttrib(out, R_NamesSymbol, listn);
+
+            UNPROTECT(3);
+        }
+        UNPROTECT(2);
+
+    }
 
     return out;
 }

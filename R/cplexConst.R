@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------#
 
 #  cplexConst.R
-#  R Interface to C API of IBM ILOG CPLEX Version 12.1, 12.2, 12.3, 12.4, 12.5.
+#  R Interface to C API of IBM ILOG CPLEX Version 12.1 to 12.6.
 #
-#  Copyright (C) 2011-2013 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
+#  Copyright (C) 2011-2014 Gabriel Gelius-Dietrich, Dpt. for Bioinformatics,
 #  Institute for Informatics, Heinrich-Heine-University, Duesseldorf, Germany.
 #  All right reserved.
 #  Email: geliudie@uni-duesseldorf.de
@@ -27,7 +27,7 @@
 
 
 #------------------------------------------------------------------------------#
-#              global variables (from cpxconst.h [12.5.0.0])                   #
+#              global variables (from cpxconst.h [12.6.0.0])                   #
 #------------------------------------------------------------------------------#
 
 # CPX_INFBOUND:  Any bound bigger than this is treated as infinity
@@ -139,6 +139,7 @@ CPX_WRITELEVEL_NONZERODISCRETEVARS  <- 4L
 CPX_SOLUTIONTARGET_AUTO          <- 0L
 CPX_SOLUTIONTARGET_OPTIMALCONVEX <- 1L
 CPX_SOLUTIONTARGET_FIRSTORDER    <- 2L
+CPX_SOLUTIONTARGET_OPTIMALGLOBAL <- 3L
 
 
 #------------------------------------------------------------------------------#
@@ -388,8 +389,6 @@ CPX_FEASOPT_OPT_QUAD <- 5L
 
 
 #------------------------------------------------------------------------------#
-# File: barconst.h
-# Version 12.3
 
 CPX_STAT_OPTIMAL_FACE_UNBOUNDED <- 20L
 CPX_STAT_ABORT_PRIM_OBJ_LIM     <- 21L
@@ -420,8 +419,6 @@ CPX_BARORDER_ND   <- 3L
 
 
 #------------------------------------------------------------------------------#
-# File: mipconst.h
-# Version 12.3
 
 # MIP emphasis settings
 CPX_MIPEMPHASIS_BALANCED     <- 0L
@@ -608,6 +605,10 @@ CPX_PARAM_AUXROOTTHREADS      <- 2139L
 CPX_PARAM_INTSOLFILEPREFIX    <- 2143L
 CPX_PARAM_PROBEDETTIME        <- 2150L
 CPX_PARAM_POLISHAFTERDETTIME  <- 2151L
+CPX_PARAM_LANDPCUTS           <- 2152L
+CPX_PARAM_RAMPUPDURATION      <- 2163L
+CPX_PARAM_RAMPUPDETTILIM      <- 2164L
+CPX_PARAM_RAMPUPTILIM         <- 2165L
 
 # Values for CPX_PARAM_SOLNPOOLREPLACE
 CPX_SOLNPOOL_FIFO    <- 0L
@@ -619,8 +620,6 @@ CPX_SOLNPOOL_FILTER_RANGE       <- 2L
 
 
 #------------------------------------------------------------------------------#
-# File: gcconst.h
-# Version 12.3
 
 CPX_CON_LOWER_BOUND          <-  1L
 CPX_CON_UPPER_BOUND          <-  2L
@@ -655,8 +654,6 @@ CPX_CON_LAST_CONTYPE         <- 27L
 
 
 #------------------------------------------------------------------------------#
-# File: netconst.h
-# Version 12.3
 
 # Network parameters
 CPX_PARAM_NETITLIM            <- 5001L
@@ -678,11 +675,12 @@ CPXNET_PRICE_SORT_MULT_PART <- 3L
 
 
 #------------------------------------------------------------------------------#
-# File: qpconst.h
-# Version 12.3
 
 # Copying data
 CPX_PARAM_QPNZREADLIM         <- 4001L
+
+# Specify how to calculate duals for QCPs
+CPX_PARAM_CALCQCPDUALS        <- 4003L
 
 # presolve
 CPX_PARAM_QPMAKEPSDIND        <- 4010L
@@ -695,3 +693,169 @@ CPX_PARAM_QPMAKEPSDIND        <- 4010L
 CPXERR_NEGATIVE_SURPLUS       <- 1207L
 CPXERR_NO_SENSIT              <- 1260L
 
+
+#------------------------------------------------------------------------------#
+# new parameter names introduced in IBM ILOG CPLEX version 12.6
+
+CPXPARAM_Advance                         <- 1001L
+CPXPARAM_Barrier_Algorithm               <- 3007L
+CPXPARAM_Barrier_ColNonzeros             <- 3009L
+CPXPARAM_Barrier_ConvergeTol             <- 3002L
+CPXPARAM_Barrier_Crossover               <- 3018L
+CPXPARAM_Barrier_Display                 <- 3010L
+CPXPARAM_Barrier_Limits_Corrections      <- 3013L
+CPXPARAM_Barrier_Limits_Growth           <- 3003L
+CPXPARAM_Barrier_Limits_Iteration        <- 3012L
+CPXPARAM_Barrier_Limits_ObjRange         <- 3004L
+CPXPARAM_Barrier_Ordering                <- 3014L
+CPXPARAM_Barrier_QCPConvergeTol          <- 3020L
+CPXPARAM_Barrier_StartAlg                <- 3017L
+CPXPARAM_ClockType                       <- 1006L
+CPXPARAM_Conflict_Display                <- 1074L
+CPXPARAM_DetTimeLimit                    <- 1127L
+CPXPARAM_DistMIP_Rampup_DetTimeLimit     <- 2164L
+CPXPARAM_DistMIP_Rampup_Duration         <- 2163L
+CPXPARAM_DistMIP_Rampup_TimeLimit        <- 2165L
+CPXPARAM_Emphasis_Memory                 <- 1082L
+CPXPARAM_Emphasis_MIP                    <- 2058L
+CPXPARAM_Emphasis_Numerical              <- 1083L
+CPXPARAM_Feasopt_Mode                    <- 1084L
+CPXPARAM_Feasopt_Tolerance               <- 2073L
+CPXPARAM_LPMethod                        <- 1062L
+CPXPARAM_MIP_Cuts_Cliques                <- 2003L
+CPXPARAM_MIP_Cuts_Covers                 <- 2005L
+CPXPARAM_MIP_Cuts_Disjunctive            <- 2053L
+CPXPARAM_MIP_Cuts_FlowCovers             <- 2040L
+CPXPARAM_MIP_Cuts_Gomory                 <- 2049L
+CPXPARAM_MIP_Cuts_GUBCovers              <- 2044L
+CPXPARAM_MIP_Cuts_Implied                <- 2041L
+CPXPARAM_MIP_Cuts_LiftProj               <- 2152L
+CPXPARAM_MIP_Cuts_MCFCut                 <- 2134L
+CPXPARAM_MIP_Cuts_MIRCut                 <- 2052L
+CPXPARAM_MIP_Cuts_PathCut                <- 2051L
+CPXPARAM_MIP_Cuts_ZeroHalfCut            <- 2111L
+CPXPARAM_MIP_Display                     <- 2012L
+CPXPARAM_MIP_Interval                    <- 2013L
+CPXPARAM_MIP_Limits_AggForCut            <- 2054L
+CPXPARAM_MIP_Limits_AuxRootThreads       <- 2139L
+CPXPARAM_MIP_Limits_CutPasses            <- 2056L
+CPXPARAM_MIP_Limits_CutsFactor           <- 2033L
+CPXPARAM_MIP_Limits_EachCutLimit         <- 2102L
+CPXPARAM_MIP_Limits_GomoryCand           <- 2048L
+CPXPARAM_MIP_Limits_GomoryPass           <- 2050L
+CPXPARAM_MIP_Limits_Nodes                <- 2017L
+CPXPARAM_MIP_Limits_PolishTime           <- 2066L
+CPXPARAM_MIP_Limits_Populate             <- 2108L
+CPXPARAM_MIP_Limits_ProbeDetTime         <- 2150L
+CPXPARAM_MIP_Limits_ProbeTime            <- 2065L
+CPXPARAM_MIP_Limits_RepairTries          <- 2067L
+CPXPARAM_MIP_Limits_Solutions            <- 2015L
+CPXPARAM_MIP_Limits_StrongCand           <- 2045L
+CPXPARAM_MIP_Limits_StrongIt             <- 2046L
+CPXPARAM_MIP_Limits_SubMIPNodeLim        <- 2062L
+CPXPARAM_MIP_Limits_TreeMemory           <- 2027L
+CPXPARAM_MIP_OrderType                   <- 2032L
+CPXPARAM_MIP_PolishAfter_AbsMIPGap       <- 2126L
+CPXPARAM_MIP_PolishAfter_DetTime         <- 2151L
+CPXPARAM_MIP_PolishAfter_MIPGap          <- 2127L
+CPXPARAM_MIP_PolishAfter_Nodes           <- 2128L
+CPXPARAM_MIP_PolishAfter_Solutions       <- 2129L
+CPXPARAM_MIP_PolishAfter_Time            <- 2130L
+CPXPARAM_MIP_Pool_AbsGap                 <- 2106L
+CPXPARAM_MIP_Pool_Capacity               <- 2103L
+CPXPARAM_MIP_Pool_Intensity              <- 2107L
+CPXPARAM_MIP_Pool_RelGap                 <- 2105L
+CPXPARAM_MIP_Pool_Replace                <- 2104L
+CPXPARAM_MIP_Strategy_Backtrack          <- 2002L
+CPXPARAM_MIP_Strategy_BBInterval         <- 2039L
+CPXPARAM_MIP_Strategy_Branch             <- 2001L
+CPXPARAM_MIP_Strategy_CallbackReducedLP  <- 2055L
+CPXPARAM_MIP_Strategy_Dive               <- 2060L
+CPXPARAM_MIP_Strategy_File               <- 2016L
+CPXPARAM_MIP_Strategy_FPHeur             <- 2098L
+CPXPARAM_MIP_Strategy_HeuristicFreq      <- 2031L
+CPXPARAM_MIP_Strategy_KappaStats         <- 2137L
+CPXPARAM_MIP_Strategy_LBHeur             <- 2063L
+CPXPARAM_MIP_Strategy_MIQCPStrat         <- 2110L
+CPXPARAM_MIP_Strategy_NodeSelect         <- 2018L
+CPXPARAM_MIP_Strategy_Order              <- 2020L
+CPXPARAM_MIP_Strategy_PresolveNode       <- 2037L
+CPXPARAM_MIP_Strategy_Probe              <- 2042L
+CPXPARAM_MIP_Strategy_RINSHeur           <- 2061L
+CPXPARAM_MIP_Strategy_Search             <- 2109L
+CPXPARAM_MIP_Strategy_StartAlgorithm     <- 2025L
+CPXPARAM_MIP_Strategy_SubAlgorithm       <- 2026L
+CPXPARAM_MIP_Strategy_VariableSelect     <- 2028L
+CPXPARAM_MIP_Tolerances_AbsMIPGap        <- 2008L
+CPXPARAM_MIP_Tolerances_Integrality      <- 2010L
+CPXPARAM_MIP_Tolerances_LowerCutoff      <- 2006L
+CPXPARAM_MIP_Tolerances_MIPGap           <- 2009L
+CPXPARAM_MIP_Tolerances_ObjDifference    <- 2019L
+CPXPARAM_MIP_Tolerances_RelObjDifference <- 2022L
+CPXPARAM_MIP_Tolerances_UpperCutoff      <- 2007L
+CPXPARAM_Network_Display                 <- 5005L
+CPXPARAM_Network_Iterations              <- 5001L
+CPXPARAM_Network_NetFind                 <- 1022L
+CPXPARAM_Network_Pricing                 <- 5004L
+CPXPARAM_Network_Tolerances_Feasibility  <- 5003L
+CPXPARAM_Network_Tolerances_Optimality   <- 5002L
+CPXPARAM_Output_CloneLog                 <- 1132L
+CPXPARAM_Output_IntSolFilePrefix         <- 2143L
+CPXPARAM_Output_MPSLong                  <- 1081L
+CPXPARAM_Output_WriteLevel               <- 1114L
+CPXPARAM_Parallel                        <- 1109L
+CPXPARAM_Preprocessing_Aggregator        <- 1003L
+CPXPARAM_Preprocessing_BoundStrength     <- 2029L
+CPXPARAM_Preprocessing_CoeffReduce       <- 2004L
+CPXPARAM_Preprocessing_Dependency        <- 1008L
+CPXPARAM_Preprocessing_Dual              <- 1044L
+CPXPARAM_Preprocessing_Fill              <- 1002L
+CPXPARAM_Preprocessing_Linear            <- 1058L
+CPXPARAM_Preprocessing_NumPass           <- 1052L
+CPXPARAM_Preprocessing_Presolve          <- 1030L
+CPXPARAM_Preprocessing_QCPDuals          <- 4003L
+CPXPARAM_Preprocessing_QPMakePSD         <- 4010L
+CPXPARAM_Preprocessing_Reduce            <- 1057L
+CPXPARAM_Preprocessing_Relax             <- 2034L
+CPXPARAM_Preprocessing_RepeatPresolve    <- 2064L
+CPXPARAM_Preprocessing_Symmetry          <- 2059L
+CPXPARAM_QPMethod                        <- 1063L
+CPXPARAM_RandomSeed                      <- 1124L
+CPXPARAM_Read_APIEncoding                <- 1130L
+CPXPARAM_Read_Constraints                <- 1021L
+CPXPARAM_Read_DataCheck                  <- 1056L
+CPXPARAM_Read_FileEncoding               <- 1129L
+CPXPARAM_Read_Nonzeros                   <- 1024L
+CPXPARAM_Read_QPNonzeros                 <- 4001L
+CPXPARAM_Read_Scale                      <- 1034L
+CPXPARAM_Read_Variables                  <- 1023L
+CPXPARAM_ScreenOutput                    <- 1035L
+CPXPARAM_Sifting_Algorithm               <- 1077L
+CPXPARAM_Sifting_Display                 <- 1076L
+CPXPARAM_Sifting_Iterations              <- 1078L
+CPXPARAM_Simplex_Crash                   <- 1007L
+CPXPARAM_Simplex_DGradient               <- 1009L
+CPXPARAM_Simplex_Display                 <- 1019L
+CPXPARAM_Simplex_Limits_Iterations       <- 1020L
+CPXPARAM_Simplex_Limits_LowerObj         <- 1025L
+CPXPARAM_Simplex_Limits_Perturbation     <- 1028L
+CPXPARAM_Simplex_Limits_Singularity      <- 1037L
+CPXPARAM_Simplex_Limits_UpperObj         <- 1026L
+CPXPARAM_Simplex_Perturbation_Constant   <- 1015L
+CPXPARAM_Simplex_Perturbation_Indicator  <- 1027L
+CPXPARAM_Simplex_PGradient               <- 1029L
+CPXPARAM_Simplex_Pricing                 <- 1010L
+CPXPARAM_Simplex_Refactor                <- 1031L
+CPXPARAM_Simplex_Tolerances_Feasibility  <- 1016L
+CPXPARAM_Simplex_Tolerances_Markowitz    <- 1013L
+CPXPARAM_Simplex_Tolerances_Optimality   <- 1014L
+CPXPARAM_SolutionTarget                  <- 1131L
+CPXPARAM_Threads                         <- 1067L
+CPXPARAM_TimeLimit                       <- 1039L
+CPXPARAM_Tune_DetTimeLimit               <- 1139L
+CPXPARAM_Tune_Display                    <- 1113L
+CPXPARAM_Tune_Measure                    <- 1110L
+CPXPARAM_Tune_Repeat                     <- 1111L
+CPXPARAM_Tune_TimeLimit                  <- 1112L
+CPXPARAM_WorkDir                         <- 1064L
+CPXPARAM_WorkMem                         <- 1065L

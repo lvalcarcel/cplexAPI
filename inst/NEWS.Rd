@@ -6,6 +6,27 @@
 
 
 % ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.11 2014-07-28}{
+  \itemize{
+    \item added support for new parameter names introduced in IBM ILOG CPLEX
+          version 12.6
+    \item fixed a bug in function \code{addQConstrCPLEX()}
+    \item added functions \code{getQConstrCPLEX()}, \code{delQConstrsCPLEX()},
+          \code{addIndConstrCPLEX()}, \code{getIndConstrCPLEX()} and
+          \code{delIndConstrsCPLEX()}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
+\section{Changes in version 1.2.10 2013-09-28}{
+  \itemize{
+    \item added function \code{addQConstrCPLEX()}
+  }
+}
+
+
+% ---------------------------------------------------------------------------- %
 \section{Changes in version 1.2.9 2013-05-23}{
   \itemize{
     \item added functions \code{copyOrderCPLEX()}, \code{getOrderCPLEX()},
