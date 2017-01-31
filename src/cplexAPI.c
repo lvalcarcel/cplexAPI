@@ -5186,7 +5186,7 @@ SEXP flushStdChannels(SEXP env) {
 
 /* -------------------------------------------------------------------------- */
 /* instantiate a new channel object */
-SEXP addChannel(SEXP env, SEXP ptrtype) {
+/*SEXP addChannel(SEXP env, SEXP ptrtype) {
 
     SEXP chout = R_NilValue;
     SEXP ptr, class;
@@ -5198,7 +5198,7 @@ SEXP addChannel(SEXP env, SEXP ptrtype) {
     newch = CPXaddchannel(R_ExternalPtrAddr(env));
 
     if (newch != NULL) {
-        /* create channel pointer */
+        /* create channel pointer *//*
         PROTECT(ptr = Rf_allocVector(STRSXP, 1));
         SET_STRING_ELT(ptr, 0, STRING_ELT(ptrtype, 0));
         
@@ -5216,12 +5216,12 @@ SEXP addChannel(SEXP env, SEXP ptrtype) {
     }
 
     return ptr;
-}
+}*/
 
 
 /* -------------------------------------------------------------------------- */
 /* flush all message destinations for a channel, ... */
-SEXP delChannel(SEXP env, SEXP newch) {
+/*SEXP delChannel(SEXP env, SEXP newch) {
 
     SEXP out = R_NilValue;
     CPXCHANNELptr delch = NULL;
@@ -5236,7 +5236,7 @@ SEXP delChannel(SEXP env, SEXP newch) {
     R_ClearExternalPtr(newch);
 
     return out;
-}
+}*/
 
 
 /* -------------------------------------------------------------------------- */
