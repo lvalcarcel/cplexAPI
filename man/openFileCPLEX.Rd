@@ -8,8 +8,10 @@
 
 \description{
   Low level interface function to the IBM ILOG CPLEX function
-  \code{CPXfopen}.  Consult the IBM ILOG CPLEX documentation for more
-  detailed information.
+  \code{CPXfopen}. Consult the IBM ILOG CPLEX documentation for more
+  detailed information. This funtion has no functionality
+  from IBM ILOG CPLEX >= 12.9.0 on, where \code{CPXfopen} has
+  been removed.
 }
 
 \usage{
@@ -30,7 +32,7 @@
 }
 
 \details{
-  Interface to the C function \code{openFile} which calls the CPLEX
+  Interface to the C function \code{cplexfopen} which calls the CPLEX
   function \code{CPXfopen}.
 }
 
@@ -41,13 +43,13 @@
 
 \references{
   The IBM ILOG CPLEX home page at
-  \url{https://www.ibm.com/developerworks/university/academicinitiative/}.
+  \url{https://www.ibm.com/support/knowledgecenter/SSSA5P}.
 }
 
 \author{
   Gabriel Gelius-Dietrich <geliudie@uni-duesseldorf.de>
 
-  Maintainer: Claus Jonathan Fritzemeier <clausjonathan.fritzemeier@uni-duesseldorf.de>
+  Maintainer: Mayo Roettger <mayo.roettger@hhu.de>
 }
 
 

@@ -1,19 +1,20 @@
-\name{setStrParmCPLEX}
-\alias{setStrParmCPLEX}
-\alias{CPXsetstrparam}
+\name{getLogFileNameCPLEX}
+\alias{getLogFileNameCPLEX}
+\alias{CPXgetlogfilename}
 
 \title{
-  Set the Value of a CPLEX String Parameter
+  Get the name of the current logfile
 }
 
 \description{
   Low level interface function to the IBM ILOG CPLEX function
-  \code{CPXsetstrparam}.  Consult the IBM ILOG CPLEX documentation for
-  more detailed information.
+  \code{CPXgetlogfilename}. Consult the IBM ILOG CPLEX documentation for
+  more detailed information. This funtion has no functionality
+  for IBM ILOG CPLEX < 12.8.0, where \code{CPXgetlogfilename} was not included.
 }
 
 \usage{
-  setStrParmCPLEX(env, parm, value)
+  getLogFileNameCPLEX(env)
 }
 
 \arguments{
@@ -22,17 +23,11 @@
     \code{\link{openEnvCPLEX}}. This is basically a pointer to an
     IBM ILOG CPLEX environment.
   }
-  \item{parm}{
-    Constant or reference number of the desired parameter.
-  }
-  \item{value}{
-    The new value of the parameter (character value).
-  }
 }
 
 \details{
-  Interface to the C function \code{setStrParm} which calls the CPLEX
-  function \code{CPXsetstrparam}.
+  Interface to the C function \code{getLogFileName} which calls the CPLEX
+  function \code{CPXgetlogfilename}.
 }
 
 \value{
@@ -45,7 +40,7 @@
 }
 
 \author{
-  Gabriel Gelius-Dietrich <geliudie@uni-duesseldorf.de>
+  Mayo Roettger <mayo.roettger@hhu.de>
 
   Maintainer: Mayo Roettger <mayo.roettger@hhu.de>
 }
@@ -56,3 +51,4 @@
 }
 
 \keyword{ optimize }
+
