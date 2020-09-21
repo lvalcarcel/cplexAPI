@@ -1,5 +1,4 @@
 ### R code from vignette source 'cplexAPI.Rnw'
-### Encoding: UTF-8
 
 ###################################################
 ### code chunk number 1: cplexAPI.Rnw:65-66
